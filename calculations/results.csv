@@ -1,0 +1,17 @@
+Chamber Pressure,6.89655,MPa
+Chamber Temperature,2608.0,K
+Throat Velocity,1022.50261,m/s
+Throat Pressure,3.87425,MPa
+Throat Temperature,2355.91689,K
+Throat Area,0.01839,In^2
+Throat Radius,0.07651,IN
+Nozzle Exit Velocity,2382.39734,m/s
+Nozzle Exit Area,0.1587,IN^2
+Exit Mach Number,3.21222,M
+Average Thrust,130.0,N
+Gamma,1.214,
+Expansion Ratio A2/At,8.62931,
+Burn Time,nan,s
+Static Throat Specific Volume,1533.04562,m^3/kg
+Gaseous Product Chamber Density,0.00105,Kg/m^3
+Thrust Coefficient,1.589,
