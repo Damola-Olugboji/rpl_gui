@@ -38,13 +38,13 @@ class engine_calculations(tk.Frame):
             offvalue=0,
             variable=self.var,
             text="Optional",
-            fg="#27e8a7",
+            fg="#1EA51D",
             bg="#222831",
             command=self.hide,
             font=("Franklin Gothic Demi", 15),
             activebackground="#222831",
             cursor="hand2",
-            activeforeground="#27e8a7",
+            activeforeground="#1EA51D",
         )
         self.cp.grid(column=0, row=6, pady=(20, 0), sticky="w")
         self.i_t = ewu(self, "Desired Total Impulse: ", ["N-s"])
@@ -52,21 +52,21 @@ class engine_calculations(tk.Frame):
         self.graph1 = tk.Checkbutton(
             self,
             text="Display Altitude/Thrust graph",
-            fg="#27e8a7",
+            fg="#1EA51D",
             bg="#222831",
             offvalue=0,
             onvalue=1,
             font=("Franklin Gothic Medium", 12),
             variable=self.g1var,
             activebackground="#222831",
-            activeforeground="#27e8a7",
+            activeforeground="#1EA51D",
             cursor="hand2",
         )
         self.g2var = tk.IntVar()
         self.graph2 = tk.Checkbutton(
             self,
             text="Display Specific Impulse Over Time graph",
-            fg="#27e8a7",
+            fg="#1EA51D",
             bg="#222831",
             offvalue=0,
             onvalue=1,
@@ -75,13 +75,13 @@ class engine_calculations(tk.Frame):
             variable=self.g2var,
             activebackground="#222831",
             highlightcolor="white",
-            activeforeground="#27e8a7",
+            activeforeground="#1EA51D",
         )
         self.g3var = tk.IntVar()
         self.graph3 = tk.Checkbutton(
             self,
             text="Display Thrust Coefficient / Altitude Graph",
-            fg="#27e8a7",
+            fg="#1EA51D",
             bg="#222831",
             offvalue=0,
             onvalue=1,
@@ -90,12 +90,12 @@ class engine_calculations(tk.Frame):
             variable=self.g3var,
             activebackground="#222831",
             highlightcolor="white",
-            activeforeground="#27e8a7",
+            activeforeground="#1EA51D",
         )
         self.display_results = tk.Button(
             self,
             text="Display Results",
-            bg="#27e8a7",
+            bg="#1EA51D",
             fg="white",
             width=20,
             font=("Garamond", 18),
