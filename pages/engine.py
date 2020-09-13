@@ -8,95 +8,47 @@ import math, csv
 class engine_calculations(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        self.frame = tk.Frame(self)
-        self.frame.grid(column=0, row=0, sticky="nesw")
         self.parent = parent
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
         self.grid_rowconfigure(2, weight=1)
         self.grid_rowconfigure(3, weight=1)
+        self.grid_rowconfigure(4, weight=1)
+        self.grid_rowconfigure(5, weight=1)
+        self.grid_rowconfigure(6, weight=1)
+        self.grid_rowconfigure(7, weight=1)
+        self.grid_rowconfigure(8, weight=1)
+        self.grid_rowconfigure(9, weight=1)
+        self.grid_rowconfigure(10, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
-
-        # add padding every 2nd row
+        self.grid_columnconfigure(2, weight=1)
+        self.import_from_propellant = tk.Button(self, text = "Import Characteristics", fg = 'black',width = 30, font=("Garamond", 14), command = self.import_from_prop)        
+        self.enter_manually = tk.Button(self, text ="Enter Manually", fg = 'black', width = 30,font=("Garamond", 14), command = self.clear )
+        self.import_from_propellant.grid(column = 0, row = 0, sticky = 'w', pady = (0,10))
+        self.enter_manually.grid(column = 0, row = 1, sticky = 'w',pady = (10,20))
+        
+        #Inputs
         self.p1 = ewu(self, "Chamber Pressure: ", ["PSI"])
-        self.p1.grid(column=0, row=1, pady=10, sticky="w")
+        self.p1.grid(column=0, row=2, pady=5, sticky="w")
         self.t1 = ewu(self, "Chamber Temperature: ", ["K", "R", "C", "F"])
-        self.t1.grid(column=0, row=2, sticky="w")
+        self.t1.grid(column=0, row=3, sticky="w")
         self.pe = ewu(self, "Ambient Pressure: ", ["PSI"])
-        self.pe.grid(column=0, row=3, pady=10, sticky="w")
+        self.pe.grid(column=0, row=4, pady=5, sticky="w")
         self.F = ewu(self, "Thrust Desired: ", ["N"])
-        self.F.grid(column=0, row=4, sticky="w")
+        self.F.grid(column=0, row=5, sticky="w")
         self.k = ewu(self, "Gamma: ", [""])
-        self.k.grid(column=0, row=5, padx=0, pady=10, sticky="w")
+        self.k.grid(column=0, row=6, padx=0, pady=5, sticky="w")
+        self.i_t = ewu(self, "Total Impulse: ", ["N-s"])
+        self.i_t.grid(column =0, row = 7, sticky = 'w', pady = 5)
         self.configure(bg="#222831")
-        self.var = 0
-        self.var = tk.IntVar()
-        self.cp = tk.Checkbutton(
-            self,
-            onvalue=1,
-            offvalue=0,
-            variable=self.var,
-            text="Optional",
-            fg="#1EA51D",
-            bg="#222831",
-            command=self.hide,
-            font=("Franklin Gothic Demi", 15),
-            activebackground="#222831",
-            cursor="hand2",
-            activeforeground="#1EA51D",
-        )
-        self.cp.grid(column=0, row=6, pady=(20, 0), sticky="w")
-        self.i_t = ewu(self, "Desired Total Impulse: ", ["N-s"])
-        self.g1var = tk.IntVar()
-        self.graph1 = tk.Checkbutton(
-            self,
-            text="Display Altitude/Thrust graph",
-            fg="#1EA51D",
-            bg="#222831",
-            offvalue=0,
-            onvalue=1,
-            font=("Franklin Gothic Medium", 12),
-            variable=self.g1var,
-            activebackground="#222831",
-            activeforeground="#1EA51D",
-            cursor="hand2",
-        )
-        self.g2var = tk.IntVar()
-        self.graph2 = tk.Checkbutton(
-            self,
-            text="Display Specific Impulse Over Time graph",
-            fg="#1EA51D",
-            bg="#222831",
-            offvalue=0,
-            onvalue=1,
-            cursor="hand2",
-            font=("Franklin Gothic Medium", 12),
-            variable=self.g2var,
-            activebackground="#222831",
-            highlightcolor="white",
-            activeforeground="#1EA51D",
-        )
-        self.g3var = tk.IntVar()
-        self.graph3 = tk.Checkbutton(
-            self,
-            text="Display Thrust Coefficient / Altitude Graph",
-            fg="#1EA51D",
-            bg="#222831",
-            offvalue=0,
-            onvalue=1,
-            cursor="hand2",
-            font=("Franklin Gothic Medium", 12),
-            variable=self.g3var,
-            activebackground="#222831",
-            highlightcolor="white",
-            activeforeground="#1EA51D",
-        )
+        self.note = tk.Label(self, text = "Note: Total Impulse Input is optional", fg = 'white',bg = '#222831', font = ("Franklin Gothic Medium", 12))
+        self.note.grid(column = 0, row = 8, sticky = 'w', pady = 5)
         self.display_results = tk.Button(
             self,
             text="Display Results",
-            bg="#1EA51D",
-            fg="white",
+            bg="#f1eff2",
+            fg="black",
             width=20,
             font=("Garamond", 18),
             command=lambda: self.calculate(
@@ -104,28 +56,36 @@ class engine_calculations(tk.Frame):
             )
             # add parameters
         )
-        self.display_results.grid(column=1, row=0, padx=(100, 0), rowspan=2)
+        self.display_results.grid(column=1, row=0, padx=(100, 0))   
         self.status = tk.Label(
             self,
             text="OUTPUTS NOT UPDATED",
-            font=("Garamond", 15),
+            font=("Garamond", 14),
             fg="white",
             bg="#222831",
         )
         self.status.grid(column=1, row=2, padx=(100, 0))
+        self.check = tk.Label(self,text = "", fg = 'white', bg = '#222831', font = ("Franklin Gothic Medium", 15))
+        self.check.grid(column =0, row = 9, sticky = 'w')
+    def clear(self):
 
-    def hide(self):
-        if self.var.get() == 0:
-            self.i_t.grid_remove()
-            self.graph1.grid_remove()
-            self.graph2.grid_remove()
-            self.graph3.grid_remove()
+        self.check.configure(text = "")
+    def import_from_prop(self):
+        from pages.propellant import outsidep
+        if outsidep == 0:
+            self.check.configure(text = "Propellant Information Unavailable", fg = 'red')
+            self.p1.clear()
+            self.t1.clear()
+            self.pe.clear()
+            self.F.clear()
+            self.k.clear()
+            self.i_t.clear()
         else:
-            self.graph1.grid(column=0, row=8, padx=0, sticky="w")
-            self.graph2.grid(column=0, row=9, padx=0, sticky="w")
-            self.graph3.grid(column=0, row=10, padx=0, sticky="w")
-            self.i_t.grid(column=0, row=7, sticky="w", padx=(0, 0), pady=5)
-
+            self.p1.default(round(outsidep.properties[0].P*14.696,3))
+            self.pe.default(round(outsidep.properties[2].P*14.696,3))
+            self.t1.default(round(outsidep.properties[0].T,3))
+            self.k.default(round(outsidep.properties[0].Cp/outsidep.properties[0].Cv,3))
+        
     def calculate(self, p_1, t_1, p_3, F, k, i_t):
         try:
             p1 = p_1.val()  # convert all MPa
@@ -214,7 +174,7 @@ class engine_calculations(tk.Frame):
 
             treev = tree(self, output)
             treev.grid(
-                column=1, row=3, columnspan=5, rowspan=10, padx=(90, 0), sticky="e"
+                column=1, row=3, columnspan=5, rowspan=10, padx=(90, 0), sticky="n"
             )
         except Exception as e:
             self.status.configure(text="Invalid Input(s)", fg="red")
@@ -233,4 +193,63 @@ Chamber Pressure 28, 18
         self.p_3 = p_3
         self.F = F
         self.k = k
+        
+        self.optional = tk.Label(
+            self,
+            text="Optional Parameters",
+            fg="#1EA51D",
+            bg="#222831",
+            font=("Franklin Gothic Demi", 15),
+        )
+        self.optional.grid(column=0, row=7, pady=(12, 0), sticky="w")
+        self.i_t = ewu(self, "Desired Total Impulse: ", ["N-s"])
+        self.g1var = tk.IntVar()
+        self.graph1 = tk.Checkbutton(
+            self,
+            text="Display Altitude/Thrust graph",
+            fg="#1EA51D",
+            bg="#222831",
+            offvalue=0,
+            onvalue=1,
+            font=("Franklin Gothic Medium", 12),
+            variable=self.g1var,
+            activebackground="#222831",
+            activeforeground="#1EA51D",
+            cursor="hand2",
+        )
+        self.g2var = tk.IntVar()
+        self.graph2 = tk.Checkbutton(
+            self,
+            text="Display Specific Impulse Over Time graph",
+            fg="#1EA51D",
+            bg="#222831",
+            offvalue=0,
+            onvalue=1,
+            cursor="hand2",
+            font=("Franklin Gothic Medium", 12),
+            variable=self.g2var,
+            activebackground="#222831",
+            highlightcolor="white",
+            activeforeground="#1EA51D",
+        )
+        self.g3var = tk.IntVar()
+        self.graph3 = tk.Checkbutton(
+            self,
+            text="Display Thrust Coefficient / Altitude Graph",
+            fg="#1EA51D",
+            bg="#222831",
+            offvalue=0,
+            onvalue=1,
+            cursor="hand2",
+            font=("Franklin Gothic Medium", 12),
+            variable=self.g3var,
+            activebackground="#222831",
+            highlightcolor="white",
+            activeforeground="#1EA51D",
+        )
+        
+        self.graph1.grid(column=0, row=9, padx=0, sticky="w")
+        self.graph2.grid(column=0, row=10, padx=0, sticky="w")
+        self.graph3.grid(column=0, row=11, padx=0, sticky="w")
+        self.i_t.grid(column=0, row=8, sticky="w", padx=(0, 0), pady=5
 """
