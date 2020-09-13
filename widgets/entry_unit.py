@@ -27,7 +27,8 @@ class entry_with_unit(tk.Frame):
             "Chamber Temperature: ": "0",
             "Ambient Pressure: ": "33",
             "Thrust Desired: ": "57",
-            "Gamma: ": "100",
+            "Gamma: ": "99",
+            "Total Impulse: ": "62"
         }
         if not (text in padding):
             self.pad = 20
@@ -35,7 +36,7 @@ class entry_with_unit(tk.Frame):
             self.pad = padding[text]
 
         self.name.pack(side="left", fill="x", expand=True)
-        self.entry = tk.Entry(self, width=10)
+        self.entry = tk.Entry(self, width=10, font = ("Franklin Gothic Medium", 12))
         self.entry.pack(side="left", padx=(self.pad, 15))
         # self.rowconfigure(0, weight=1)
         # self.columnconfigure(0, weight=1)
@@ -55,7 +56,10 @@ class entry_with_unit(tk.Frame):
         if self.entry.get() == "":
             return "nan"
         return float(self.entry.get())
-
+    def default(self,text):
+        self.entry.insert(0, text)
+    def clear(self):
+        self.entry.delete(0, 'end')
 
 """
 gamma 100 , 7
