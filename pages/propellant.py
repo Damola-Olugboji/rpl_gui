@@ -164,20 +164,24 @@ class propellant_calculations(tk.Frame):
             self.p = ppp.FrozenPerformance()
             self.calc_prop_var = [0]*len(self.calc_prop)
             list_tuple = []
-
+            self.prop_weight = 0
+            self.propellant_list = []
             for i in range(0, len(self.calc_prop)):
+                self.propellant_list.append(self.calc_prop[i][0])
                 self.calc_prop_var[i] = ppp.PROPELLANTS[self.calc_prop[i][0]]
+                self.prop_weight += float(self.calc_prop[i][1])
                 list_tuple.append((self.calc_prop_var[i], float(self.calc_prop[i][1])))
             self.p.add_propellants_by_mass(list_tuple)    
             self.p.set_state(P = float(self.p1), Pe = float(self.pe))
             self.calculate_button.config(state = 'disabled')
             self.display_button.config(state = 'active')
             self.reset_button.grid(column = 2, row = 7, columnspan = 2, rowspan = 2, sticky = 'n')
-            self.validation_label.configure(text = "", bg = "#222831")
+            self.validation_label.configure(text = "Total Weight: " + str(self.prop_weight), fg = 'white', bg = "#222831")
             #self.validation_label.configure(text = "Sucess :)", bg = 'green', fg = 'white', font = ("Garamond", 20))
             propellant_calculations.prop_variable = self.p
             global outsidep
             outsidep = self.p
+            
 
             
         except Exception as e:
@@ -214,7 +218,7 @@ class propellant_calculations(tk.Frame):
             self.cv_label.grid(column = i, row = 4, padx = (15,0), sticky = 'w')
             self.gamma_label.grid(column = i, row = 5, padx = (15,0), sticky = 'w')
             self.MM_label.grid(column = i, row = 6, padx = (15,0), sticky = 'w')
-        
+            
         self.performance_label = tk.Label(tl_results,text = "========= Perfromance =========:", font = ("Garamond", 14))
         self.isp_label = tk.Label(tl_results, text = "Specific Impulse (m/s): "+ str(round(propellant_calculations.prop_variable.performance.Isp,5)), font = ('Garamond', 12))
         self.cstar_label = tk.Label(tl_results,text = "C* (m/s): " + str(round(propellant_calculations.prop_variable.performance.cstar,5)), fg = 'black', font = ('Garamond', 12))
@@ -226,6 +230,12 @@ class propellant_calculations(tk.Frame):
         self.cstar_label.grid(column = 0, row = 9, padx = (15,0), sticky = 'w')
         self.ispg_label.grid(column = 0, row = 10, padx = (15,0), sticky = 'w')
         self.cf.grid(column = 0, row = 11, padx = (15,0), sticky = 'w')
+        
+        self.propellant_label = tk.Label(tl_results, text = "========= Propellants =========", font = ("Garamond", 14))
+        self.propellant_label.grid(column = 1, row = 7, sticky = 'w')
+        for i in range (0, len(self.propellant_list)):
+            self.list_propellant = tk.Label(tl_results, text = self.propellant_list[i], font = ("Garamond", 12))
+            self.list_propellant.grid(column = 1, row = 7+i, sticky = 'w')
             
 
         
@@ -246,6 +256,7 @@ class propellant_calculations(tk.Frame):
             self.reset_button.grid_forget()
             self.calculate_button.config(state = 'active')
             self.display_button.config(state = 'disabled')
+            self.validation_label.configure(text = "")
             global outsidep
             outsidep = 0
             #self.validation_label.grid_remove()

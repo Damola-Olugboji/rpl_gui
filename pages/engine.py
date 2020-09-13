@@ -24,26 +24,26 @@ class engine_calculations(tk.Frame):
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure(2, weight=1)
         self.import_from_propellant = tk.Button(self, text = "Import Characteristics", fg = 'black',width = 30, font=("Garamond", 14), command = self.import_from_prop)        
-        self.enter_manually = tk.Button(self, text ="Enter Manually", fg = 'black', width = 30,font=("Garamond", 14), command = self.clear )
+        self.enter_manually = tk.Button(self, text ="Clear", fg = 'black', width = 30,font=("Garamond", 14), command = self.clear )
         self.import_from_propellant.grid(column = 0, row = 0, sticky = 'w', pady = (0,10))
         self.enter_manually.grid(column = 0, row = 1, sticky = 'w',pady = (10,20))
         
         #Inputs
         self.p1 = ewu(self, "Chamber Pressure: ", ["PSI"])
-        self.p1.grid(column=0, row=2, pady=5, sticky="w")
+        self.p1.grid(column=0, row=2, pady=8, sticky="w")
         self.t1 = ewu(self, "Chamber Temperature: ", ["K", "R", "C", "F"])
         self.t1.grid(column=0, row=3, sticky="w")
         self.pe = ewu(self, "Ambient Pressure: ", ["PSI"])
-        self.pe.grid(column=0, row=4, pady=5, sticky="w")
+        self.pe.grid(column=0, row=4, pady=8, sticky="w")
         self.F = ewu(self, "Thrust Desired: ", ["N"])
         self.F.grid(column=0, row=5, sticky="w")
         self.k = ewu(self, "Gamma: ", [""])
         self.k.grid(column=0, row=6, padx=0, pady=5, sticky="w")
         self.i_t = ewu(self, "Total Impulse: ", ["N-s"])
-        self.i_t.grid(column =0, row = 7, sticky = 'w', pady = 5)
+        self.i_t.grid(column =0, row = 7, sticky = 'w', pady = 8)
         self.configure(bg="#222831")
         self.note = tk.Label(self, text = "Note: Total Impulse Input is optional", fg = 'white',bg = '#222831', font = ("Franklin Gothic Medium", 12))
-        self.note.grid(column = 0, row = 8, sticky = 'w', pady = 5)
+        self.note.grid(column = 0, row = 8, sticky = 'w', pady = 8)
         self.display_results = tk.Button(
             self,
             text="Display Results",
@@ -64,11 +64,16 @@ class engine_calculations(tk.Frame):
             fg="white",
             bg="#222831",
         )
-        self.status.grid(column=1, row=2, padx=(100, 0))
+        self.status.grid(column=1, row=1, padx=(100, 0))
         self.check = tk.Label(self,text = "", fg = 'white', bg = '#222831', font = ("Franklin Gothic Medium", 15))
         self.check.grid(column =0, row = 9, sticky = 'w')
     def clear(self):
-
+        self.p1.clear()
+        self.t1.clear()
+        self.pe.clear()
+        self.F.clear()
+        self.k.clear()
+        self.i_t.clear()
         self.check.configure(text = "")
     def import_from_prop(self):
         from pages.propellant import outsidep
@@ -81,6 +86,12 @@ class engine_calculations(tk.Frame):
             self.k.clear()
             self.i_t.clear()
         else:
+            self.p1.clear()
+            self.t1.clear()
+            self.pe.clear()
+            self.F.clear()
+            self.k.clear()
+            self.i_t.clear()
             self.p1.default(round(outsidep.properties[0].P*14.696,3))
             self.pe.default(round(outsidep.properties[2].P*14.696,3))
             self.t1.default(round(outsidep.properties[0].T,3))
@@ -174,7 +185,7 @@ class engine_calculations(tk.Frame):
 
             treev = tree(self, output)
             treev.grid(
-                column=1, row=3, columnspan=5, rowspan=10, padx=(90, 0), sticky="n"
+                column=1, row=2, columnspan=5, rowspan=6, padx=(90, 0), sticky="n"
             )
         except Exception as e:
             self.status.configure(text="Invalid Input(s)", fg="red")
