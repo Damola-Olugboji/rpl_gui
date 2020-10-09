@@ -7,8 +7,8 @@ n = 0
 inc = 0
 
 
-class entry_with_unit(tk.Frame):
-    def __init__(self, parent, text, value):
+class entry_nounit(tk.Frame):
+    def __init__(self, parent, text):
         tk.Frame.__init__(self, parent)
         self.parent = parent
         self.text = text
@@ -23,11 +23,11 @@ class entry_with_unit(tk.Frame):
             bg="#222831",
         )
         padding = {
-            "Chamber Pressure: ": "28",
-            "Chamber Temperature: ": "0",
-            "Ambient Pressure: ": "33",
-            "Thrust Desired: ": "57",
-            "Gamma: ": "99",
+            "Stagnation Temperature: ": "28",
+            "Stagnation Pressure: ": "0",
+            "Gamma: ": "33",
+            "Real Wall Temperature: ": "57",
+            "Throat Radius: ": "99",
             "Total Impulse: ": "62",
             "Molecular Weight: ": "36"
         }
@@ -41,17 +41,9 @@ class entry_with_unit(tk.Frame):
         self.entry.pack(side="left", padx=(self.pad, 15))
         # self.rowconfigure(0, weight=1)
         # self.columnconfigure(0, weight=1)
-        self.n = tk.StringVar()
-        self.value = value
-        self.p = tk.OptionMenu(self, self.n, *value)
-        self.p.configure(cursor="hand2")
         # self.p.configure(bg="#222831", fg="white")
-        self.n.set(value[0])
         # self.p["menu"].config(bg="red")
-        self.p.pack(side="left")
 
-    def unit(self):
-        return self.n.get()
 
     def val(self):
         if self.entry.get() == "":
@@ -62,10 +54,3 @@ class entry_with_unit(tk.Frame):
     def clear(self):
         self.entry.delete(0, 'end')
 
-"""
-gamma 100 , 7
-thrust desried 55, 16
-nozzle exit pressure 20, 22
-chamber temperature 0, 21
-Chamber Pressure 28, 18
-"""

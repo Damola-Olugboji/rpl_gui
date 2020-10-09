@@ -26,24 +26,26 @@ class engine_calculations(tk.Frame):
         self.import_from_propellant = tk.Button(self, text = "Import Characteristics", fg = 'black',width = 30, font=("Garamond", 14), command = self.import_from_prop)        
         self.enter_manually = tk.Button(self, text ="Clear", fg = 'black', width = 30,font=("Garamond", 14), command = self.clear )
         self.import_from_propellant.grid(column = 0, row = 0, sticky = 'w', pady = (0,10))
-        self.enter_manually.grid(column = 0, row = 1, sticky = 'w',pady = (10,20))
+        self.enter_manually.grid(column = 0, row = 1, sticky = 'w',pady = (10,10))
         
         #Inputs
         self.p1 = ewu(self, "Chamber Pressure: ", ["PSI"])
-        self.p1.grid(column=0, row=2, pady=8, sticky="w")
+        self.p1.grid(column=0, row=2, pady=5, sticky="w")
         self.t1 = ewu(self, "Chamber Temperature: ", ["K", "R", "C", "F"])
-        self.t1.grid(column=0, row=3, sticky="w")
+        self.t1.grid(column=0, row=3, sticky="w", pady = 5)
         self.pe = ewu(self, "Ambient Pressure: ", ["PSI"])
-        self.pe.grid(column=0, row=4, pady=8, sticky="w")
+        self.pe.grid(column=0, row=4, pady=5, sticky="w")
         self.F = ewu(self, "Thrust Desired: ", ["N"])
-        self.F.grid(column=0, row=5, sticky="w")
+        self.F.grid(column=0, row=5, sticky="w", pady = 8)
         self.k = ewu(self, "Gamma: ", [""])
         self.k.grid(column=0, row=6, padx=0, pady=5, sticky="w")
         self.i_t = ewu(self, "Total Impulse: ", ["N-s"])
-        self.i_t.grid(column =0, row = 7, sticky = 'w', pady = 8)
+        self.i_t.grid(column =0, row = 7, sticky = 'w', pady = 5)
         self.configure(bg="#222831")
+        self.MM = ewu(self, "Molecular Weight: ", [""])
+        self.MM.grid(column = 0, row = 8, sticky = 'w', pady = 5)
         self.note = tk.Label(self, text = "Note: Total Impulse Input is optional", fg = 'white',bg = '#222831', font = ("Franklin Gothic Medium", 12))
-        self.note.grid(column = 0, row = 8, sticky = 'w', pady = 8)
+        self.note.grid(column = 0, row = 9, sticky = 'w', pady = 5)
         self.display_results = tk.Button(
             self,
             text="Display Results",
@@ -52,7 +54,7 @@ class engine_calculations(tk.Frame):
             width=20,
             font=("Garamond", 18),
             command=lambda: self.calculate(
-                self.p1, self.t1, self.pe, self.F, self.k, self.i_t
+                self.p1, self.t1, self.pe, self.F, self.k, self.i_t, self.MM
             )
             # add parameters
         )
@@ -66,7 +68,7 @@ class engine_calculations(tk.Frame):
         )
         self.status.grid(column=1, row=1, padx=(100, 0))
         self.check = tk.Label(self,text = "", fg = 'white', bg = '#222831', font = ("Franklin Gothic Medium", 15))
-        self.check.grid(column =0, row = 9, sticky = 'w')
+        self.check.grid(column =0, row = 10, sticky = 'w')
     def clear(self):
         self.p1.clear()
         self.t1.clear()
@@ -85,6 +87,7 @@ class engine_calculations(tk.Frame):
             self.F.clear()
             self.k.clear()
             self.i_t.clear()
+            self.MM.clear()
         else:
             self.p1.clear()
             self.t1.clear()
@@ -92,21 +95,22 @@ class engine_calculations(tk.Frame):
             self.F.clear()
             self.k.clear()
             self.i_t.clear()
+            self.MM.clear()
             self.p1.default(round(outsidep.properties[0].P*14.696,3))
             self.pe.default(round(outsidep.properties[2].P*14.696,3))
             self.t1.default(round(outsidep.properties[0].T,3))
             self.k.default(round(outsidep.properties[0].Cp/outsidep.properties[0].Cv,3))
-        
-    def calculate(self, p_1, t_1, p_3, F, k, i_t):
+            #self.MM.default(round(,3))
+    def calculate(self, p_1, t_1, p_3, F, k, i_t, MM):
         try:
             p1 = p_1.val()  # convert all MPa
             t1 = t_1.val()
             p3 = p_3.val()
             it = i_t.val()
-
+            MM = MM.val()
             F = F.val()  # don't need units, use N
             k = k.val()  # don't need units
-            R = 8.3145 / 0.022745  # need molecular weight input for R value
+            R = 8.3145 / (MM/ 1000)  # need molecular weight input for R value
             t2 = t1 * ((p3 / p1) ** ((k - 1) / k))
 
             # chamber temperature: convert all to kelvin

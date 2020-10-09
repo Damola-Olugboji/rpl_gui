@@ -38,7 +38,7 @@ class propellant_calculations(tk.Frame):
             self.prop[i][0] = AutocompleteCombobox(self)
             self.prop[i][0].set_completion_list(propellant_data)
             self.prop[i][0].configure(width="40", font=("Franklin Gothic Medium", 12))
-            self.prop[i][0].grid(column=0, row=i + 1, pady=3)
+            self.prop[i][0].grid(column=0, row=i + 1, pady=5)
             self.prop[0][0].focus_set()
             self.prop[i][1] = tk.Entry(
                 self, width=10, font=("Franklin Gothic Medium", 12)

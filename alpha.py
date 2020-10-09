@@ -3,6 +3,7 @@ from widgets.navbar import navbar
 from pages.engine import engine_calculations
 from calculations.tree_results import tree
 from pages.propellant import propellant_calculations
+from pages.heatTransfer import heatTransferHub
 
 
 def exit():
@@ -103,7 +104,11 @@ class heat(tk.Frame):
             fg="white",
             bg="#222831",
         )
-        label.grid(pady=10)
+        label.grid(pady=(20, 10), row=1, columnspan=2, sticky="w", padx=80)
+        self.heat = heatTransferHub(self)
+        self.heat.grid(column = 0, row = 2, sticky = 'w', padx = 80)
+        #self.heat = bartz(self)
+        #self.heat.grid(column = 0, row = 2, sticky = 'w', padx = 80)
 
 
 class propellant(tk.Frame):
@@ -131,8 +136,8 @@ class propellant(tk.Frame):
 if __name__ == "__main__":
     app = GUI()
     app.geometry("1100x630+30+30")
-    app.minsize(1100, 630)
-    app.maxsize(1100, 630)
+    app.minsize(1100, 680)
+    app.maxsize(1100, 680)
     app.mainloop()
 """
 chamber pressure
