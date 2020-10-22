@@ -3,3 +3,23 @@ padding in enu
 
 Heat Transfer: 
 w value 
+convert bartz to metric
+change vaidation heat Transfer and add bartz csv validation
+[error] success message showing when all values are default/none
+change color back to red on error
+
+bartz: assumes starting mach is mach 1 @ throat
+- (expected mach exit + 0.5 / # of points)/2
+
+- Max Iteration : User Defined
+
+line 1279 missing denom_sum_comp[6] 
+line 1280 missing denom_sum_comp[11]
+
+
+
+change validation propellant (maybe switch case)
+change validation engine
+
+make propellant modular
+make [chemicals] global

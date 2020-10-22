@@ -23,13 +23,15 @@ class entry_nounit(tk.Frame):
             bg="#222831",
         )
         padding = {
-            "Stagnation Temperature: ": "28",
-            "Stagnation Pressure: ": "0",
-            "Gamma: ": "33",
-            "Real Wall Temperature: ": "57",
-            "Throat Radius: ": "99",
-            "Total Impulse: ": "62",
-            "Molecular Weight: ": "36"
+            "Stagnation Temperature(K): ": "28",
+            "Stagnation Pressure(MPa): ": "35",
+            "Throat Radius(M): ": "96",
+            "Real Wall Temperature(K): ": "37",
+            "Gamma: " : "159",
+            "Specific Heat of Exhaust: ": "50",
+            "W value: ": "160",
+            "Characteristic Velocity(m/s): ": "27",
+            "Recovery Factor: ":"109"
         }
         if not (text in padding):
             self.pad = 20

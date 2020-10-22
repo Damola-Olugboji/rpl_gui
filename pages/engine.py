@@ -77,6 +77,8 @@ class engine_calculations(tk.Frame):
         self.k.clear()
         self.i_t.clear()
         self.check.configure(text = "")
+        self.treev.grid_forget()
+        self.status.configure(text = "OUTPUTS NOT UPDATED", fg= 'white')
     def import_from_prop(self):
         from pages.propellant import outsidep
         if outsidep == 0:
@@ -187,8 +189,8 @@ class engine_calculations(tk.Frame):
                     wr.writerow(output[i])
                 self.status.configure(text="OUTPUTS UPDATED")
 
-            treev = tree(self, output)
-            treev.grid(
+            self.treev = tree(self, output)
+            self.treev.grid(
                 column=1, row=2, columnspan=5, rowspan=6, padx=(90, 0), sticky="n"
             )
         except Exception as e:

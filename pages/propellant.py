@@ -11,7 +11,6 @@ based on Nasa publication by Sanford Gordon and Bonnie J. McBride
 https://www.grc.nasa.gov/www/CEAWeb/RP-1311.pdf
 """
 outsidep = 0
-
 class propellant_calculations(tk.Frame):
     prop_variable = 0 #initialization of a variable that will eventually contian pypropep propellant data
     def __init__(self, parent):
