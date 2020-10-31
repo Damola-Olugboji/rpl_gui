@@ -9,6 +9,11 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
+cm = (k - 1) / 2
+cp = (k + 1) / 2
+cpm = (k + 1) / (2 * (k - 1))
+
+
 class heatTransferHub(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
@@ -46,7 +51,7 @@ class bartz(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
         self.configure(bg="#222831")
-
+        self.importFile = ""
         self.parent = parent
         self.label = tk.Label(
             self,
@@ -59,9 +64,9 @@ class bartz(tk.Frame):
 
         self.importCoord = tk.Button(
             self,
-            text="Import \n Coordinates",
+            text="Import Coordinates",
             fg="black",
-            font=("Garamond", 20),
+            font=("Garamond", 15),
             command=self.UploadAction,
         )
         self.importCoord.grid(column=0, row=3, rowspan=3, sticky="w")
@@ -84,6 +89,13 @@ class bartz(tk.Frame):
         self.mu_0.grid(column=1, row=8, sticky="w")
         self.cstar = enu(self, "Characteristic Velocity(m/s): ")
         self.cstar.grid(column=1, row=9, sticky="w", pady=5)
+        self.importStatus = tk.Label(self, text="", fg="white", font=("Garamond", 15))
+        self.importStatus.grid(column=1, row=5)
+        self.calculate_button = tk.Button(
+            self, text="Calculate", fg="black", font=("Garamond", 20), width=15
+        )
+        self.calculate_button.config(state="disabled")
+        self.calculate_button.grid(column=2, row=10, pady=15)
         # self.Pr_o = (4*k.val())/((9*k.val())-5) #stagnant prental(maybe) number
         self.td = self.tr.val() * 2
 
@@ -92,17 +104,119 @@ class bartz(tk.Frame):
         if filename[-4:] == ".csv":
             df = pd.read_csv(filename, header=None)
             df = np.array(df)
-            formatdf = np.array2string(
-                df, formatter={"float_kind": lambda x: "%.7f" % x}
-            )
-            # self.tabulatetemperature(self,df)
-            height = len(df)
-            self.tempRange = [0] * height
-            tempStep = (4693 - 500) / height
-            for i in range(1, height):
-                tempRange[i] = 500 + tempStep * (i - 1)
+            print(len(df[0]))
+            if (
+                len(df[0]) == 3 and len(df) > 30
+            ):  # need a more concrete parameter for validation
+                self.importStatus.configure(text="Import Successful")
+                self.importFile = filename
+                self.calculate_button.config(state="normal")
+            else:
+                self.importStatus.configure(text="Incorrect File Format")
+                self.calculate_button.config(state="disabled")
         else:
-            print("wrong file")
+            pass
+
+    def calculate(self, filename):
+        df = pd.read_csv(filename, header=None)
+        df = np.arrray(df)
+        formatdf = np.array2string(df, formatter={"float_kind": lambda x: "%.7f" % x})
+        height = len(df)
+        self.varMatrix = [0] * 11
+        A_t = math.pi * (tr ** 2)
+        h_g_const = # h_g_const = (.026/(dStar^.2))*(((mu_o^.2)*c_p)/(Pr_o^.6))*(((p_o*g)/cStar)^.8)
+
+    def machIter(self, data, height):
+        stepSize = 0.00005
+        maxIteration = 20000
+        convCond = 0.0005
+        lastMach = 1
+        self.machArray = []
+        for i in range(0, height):
+
+            converged = False
+            r = round(df[i][1], 7)
+            firstR = round(df[0][1], 7)
+            rRatioTarget = (r / rStar) ** 2
+            currentIteration = 1
+            low = 1
+            high = exitMach + 0.5
+            counter = 0
+            while converged == False and low <= high:
+                mid = (low + high) / 2
+                M = mid
+                testCase = (1 / M) * ((1 + cm * (M ** 2) / cp) ** cpm)
+                if round(df[i][1], 7) == firstR:
+                    converged = True
+                    M = 1.0
+                elif abs(testCase - rRatioTarget) <= convCond:
+                    converged = True
+                else:
+
+                    if testCase < rRatioTarget:
+                        low = mid + stepSize
+                    elif testCase > rRatioTarget:
+                        high = mid - stepSize
+
+            self.machArray.append(M)
+        return self.machArray
+
+    def tabulateTemperature(self, data, height):
+        for i in range(0, height):
+            M = self.machArray[i]
+
+        pass
+
+    def tabulateFlowDensity(self, data, height):
+        pU_numerator_const = ((32.174 / 778.2) ** (1 / 2)) * k * p_o
+        pU_denominator_const = (c_p * T_o * (k - 1)) ** (1 / 2)
+        temp = []
+        for i in range(0, height):
+            M = self.machArray[i]
+            temp.append(
+                (pU_numerator_const * M)
+                / (pU_denominator_const * (1 + cm * (M ** 2)) ** cpm)
+            )
+        return temp
+
+    def tabulateAdiabaticWallTemperature(self, data, height):
+        for i in range(0, height):
+            pass
+
+    def tabulateIntegralConstants(self, data, height):
+        aMatrix = []
+        bMatrix = []
+        cMatrix = []
+        for i in range(0, height):
+            M = self.machArray[i]
+            aMatrix.append(T_w / self.varMatrix[4][i])
+            bMatrix.append((T_o / T_w) - 1)
+            cMatrix.append((cm * (M ** 2)) * (self.varMatrix[4][i] / T_w))
+
+        return aMatrix, bMatrix, cMatrix
+
+    def tabulatePressureAlongNozzle(self, data, height):
+        temp = []
+        for i in range(0, height):
+            M = self.machArray[i]
+            temp.append(p_o / ((1 + (0.5 * (k - 1) * M ^ 2)) ** (k / (k - 1))))
+        return temp
+
+
+
+"""
+zStation_matrix = 1;        %x is defined as zStation as that is the format that the bartz paper takes
+r_matrix = 2;               %radius
+p_matrix = 3;               %pressure
+M_matrix = 4;               %mach number
+T_matrix = 5;               %temperature matrix
+pU_matrix = 6;              %flow density
+T_aw_matrix = 7;            %adiabatic wall temperature
+a_matrix = 8;               %integral constant              
+b_matrix = 9;               %integral constant    
+c_matrix = 10;              %integral constant    
+h_g_matrix = 11;            %closed form bartz heat transfer coeff
+"""
 
 
 class viscosityCalculator(tk.Frame):
@@ -523,8 +637,9 @@ class viscosityCalculator(tk.Frame):
                         + denom_sum_comp[23]
                     )
                 else:
-                    print("error")
-                    break
+                    self.validationHandling.configure(text="Error", fg="red")
+                    self.calculateButton.config(state="disabled")
+                    raise ValueError("Error")
                 visc_mix = [0] * num
                 for a in range(0, len(visc_mix)):
                     visc_mix[a] = (mf_a[a] * math.sqrt(mu_a[a])) / (
