@@ -31,7 +31,7 @@ def bartz():
         currentIteration = 1
         M = lastMach
 
-        while converged == False and currentIteration < maxIteration:
+        while converged == False and currentIteration < maxIteration and low <= high:
             testCase = (1 / M) * ((1 + cm * (M ** 2) / cp) ** cpm)
             # print(str(currentIteration) + ": " + str(M))
             if abs(testCase - rRatioTarget) <= convCond:
@@ -60,7 +60,7 @@ def bartzb():
     # print(height)
     stepSize = 0.00005
     maxIteration = 20000
-    convCond = 0.0000001
+    convCond = 0.0001
     lastMach = 1
     # print(df)
     machArray = []
@@ -81,7 +81,7 @@ def bartzb():
             + str(i)
             + " ]--------------------------------------"
         )
-        print("r = " + str(r))
+        # print("r = " + str(r))
         while converged == False and low <= high:
 
             mid = (low + high) / 2
@@ -106,7 +106,7 @@ def bartzb():
             # print(str(counter) + ": " + str(M))
             counter += 1
             # print(counter)
-
+            # print("low: " + str(low) + "  Mid: " + str(mid) + " high: " + str(high))
             """print(
                 "DF Value: "
                 + str(round(df[i][1], 7))
@@ -126,7 +126,7 @@ def bartzb():
                 + str(abs(testCase - rRatioTarget))
             )"""
 
-        print("Mach: " + str(round(M, 9)))
+        # print("Mach: " + str(round(M, 9)))
         machArray.append(M)
         rArray.append(r)
         if converged == False:
