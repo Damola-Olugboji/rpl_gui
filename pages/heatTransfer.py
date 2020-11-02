@@ -9,9 +9,9 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
-cm = (k - 1) / 2
+"""cm = (k - 1) / 2
 cp = (k + 1) / 2
-cpm = (k + 1) / (2 * (k - 1))
+cpm = (k + 1) / (2 * (k - 1))"""
 
 
 class heatTransferHub(tk.Frame):
@@ -124,7 +124,7 @@ class bartz(tk.Frame):
         height = len(df)
         self.varMatrix = [0] * 11
         A_t = math.pi * (tr ** 2)
-        h_g_const = # h_g_const = (.026/(dStar^.2))*(((mu_o^.2)*c_p)/(Pr_o^.6))*(((p_o*g)/cStar)^.8)
+        # h_g_const = (.026/(dStar^.2))*(((mu_o^.2)*c_p)/(Pr_o^.6))*(((p_o*g)/cStar)^.8)
 
     def machIter(self, data, height):
         stepSize = 0.00005
@@ -162,10 +162,12 @@ class bartz(tk.Frame):
         return self.machArray
 
     def tabulateTemperature(self, data, height):
+        temp = []
         for i in range(0, height):
             M = self.machArray[i]
-
-        pass
+            T = 2 * T_o / (2 + (k * (M ** 2)) - M ** 2)
+            temp.append(T)
+        return temp
 
     def tabulateFlowDensity(self, data, height):
         pU_numerator_const = ((32.174 / 778.2) ** (1 / 2)) * k * p_o
@@ -180,8 +182,12 @@ class bartz(tk.Frame):
         return temp
 
     def tabulateAdiabaticWallTemperature(self, data, height):
+        temp = []
         for i in range(0, height):
-            pass
+            M = self.machArray[i]
+            T_aw = ((1 + recoveryFactor * cm * (M ** 2)) / (1 + cm * (M ** 2))) * T_o
+            temp.append(T_aw)
+        return temp
 
     def tabulateIntegralConstants(self, data, height):
         aMatrix = []
@@ -201,7 +207,6 @@ class bartz(tk.Frame):
             M = self.machArray[i]
             temp.append(p_o / ((1 + (0.5 * (k - 1) * M ^ 2)) ** (k / (k - 1))))
         return temp
-
 
 
 """
