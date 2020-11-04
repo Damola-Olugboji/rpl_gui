@@ -8,6 +8,8 @@ change vaidation heat Transfer and add bartz csv validation
 [error] success message showing when all values are default/none
 change color back to red on error
 
+change -2 to 2 in elif tree
+
 bartz: assumes starting mach is mach 1 @ throat
 - (expected mach exit + 0.5 / # of points)/2
 
