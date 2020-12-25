@@ -398,6 +398,7 @@ class viscosityCalculator(tk.Frame):
             num = len(strippedOutputList)
 
             self.visc_gas_mix_a = [0] * 3500
+            gas_therm_a = [0] * 3500
             for aaa in range(0, 3500):
                 mu_a = [0] * num
                 mw_a = [0] * num
@@ -657,100 +658,219 @@ class viscosityCalculator(tk.Frame):
                 visc_mix_gas = sum(visc_mix)
                 self.visc_gas_mix_a[aaa] = visc_mix_gas
                 temp = temp + 1
-            with open("viscosity_results.csv", "w", newline="") as incsv:
+
+                sigma_aa = [[0 for x in range(num)] for y in range(num)]
+                ek_aa = [[0 for x in range(num)] for y in range(num)]
+                t_star = [[0 for x in range(num)] for y in range(num)]
+                omega_22 = [[0 for x in range(num)] for y in range(num)]
+                omega_12 = [[0 for x in range(num)] for y in range(num)]
+                oemga_13 = [[0 for x in range(num)] for y in range(num)]
+                oemga_11 = [[0 for x in range(num)] for y in range(num)]
+                a_parameter = [[0 for x in range(num)] for y in range(num)]
+                b_parameter = [[0 for x in range(num)] for y in range(num)]
+                visc_ij = [[0 for x in range(num)] for y in range(num)]
+                therm_ij = [[0 for x in range(num)] for y in range(num)]
+                num_therm = [[0 for x in range(num)] for y in range(num)]
+
+                for i in range(0, num):
+                    for j in range(0, num):
+                        sigma_aa[i][j] = 0.5 * (sigma_a[i] + Sigma_a[j])
+
+                for i in range(0, num):
+                    for j in range(0, num):
+                        ek_aa[i][j] = m.sqrt(ek_a[i] * ek_a[j])
+
+                t_star = temp * (1.0 / ek_aa)
+
+                for w in range(0, num * num):
+                    x = t_star[w]
+                    omega_22[w] = (
+                        (1.586)
+                        + (-0.7882) * m.log(x)
+                        + (0.2938) * log(x) ** 2
+                        + (0.008756) * m.log(x) ** 3
+                        + (-0.06198) * m.log(x) ** 4
+                        + (0.01936) * m.log(x) ** 5
+                        + (-0.003264) * m.log(x) ** 6
+                        + (0.0002639) * m.log(x) ** 7
+                        + (-8.135 * 10 ** -6) * m.log(x) ** 8
+                    )
+
+                for w in range(0, num * num):
+                    x = t_star[w]
+                    omega_12[w] = (
+                        1.204
+                        + (-0.5152) * m.log(x)
+                        + (0.2609) * m.log(x) ** 2
+                        + (-0.06649) * m.log(x) ** 3
+                        + (-0.01035) * m.log(x) ** 4
+                        + (0.01155) * m.log(x) ** 5
+                        + (-0.003077) * m.log(x) ** 6
+                        + (0.000366) * m.log(x) ** 7
+                        + (-1.671 * 10 ** -5) * m.log(x) ** 8
+                    )
+
+                for w in range(0, num * num):
+                    x = t_star[w]
+                    omega_13[w] = (
+                        1.076
+                        + (-0.3846) * m.log(x)
+                        + (0.2081) * m.log(x) ** 2
+                        + (-0.0752) * m.log(x) ** 3
+                        + (0.005667) * m.log(x) ** 4
+                        + (0.005235) * m.log(x) ** 5
+                        + (-0.001856) * m.log(x) ** 6
+                        + (0.0002466) * m.log(x) ** 7
+                        + (-1.199 * 10 ** -5) * m.log(x) ** 8
+                    )
+
+                for w in range(0, num * num):
+                    x = t_star[w]
+                    omega_11[w] = (
+                        1.44
+                        + (-0.7037) * m.log(x)
+                        + (0.286) * m.log(x) ** 2
+                        + (-0.03118) * m.log(x) ** 3
+                        + (-0.02613) * m.log(x) ** 4
+                        + (0.0127) * m.log(x) ** 5
+                        + (-0.002519) * m.log(x) ** 6
+                        + (0.0002424) * m.log(x) ** 7
+                        + (-9.291 * 10 ^ -6) * m.log(x) ** 8
+                    )
+
+                for i in range(0, num):
+                    for j in range(0, num):
+                        a_parameters[i][j] = omega_22[i][j] / omega_11[i][j]
+
+                for i in range(0, num):
+                    for j in range(0, num):
+                        b_parameters[i][j] = (5 * omega_12[i][j]) / (omega_11[i][j])
+
+                for i in range(0, num):
+                    for j in range(0, num):
+                        visc_ij[i][j] = 266.93(
+                            m.sqrt((2 * mw_a[i] * mw_a[j] * temp) / (mw_a[i] + mw_a[j]))
+                            / ((sigma_aa[i][j]) ** w * omega_22[i][j])
+                        )
+                        visc_ij[i][j] = visc_ij[i][j] * 10 ** (-7) * 0.1
+
+                for i in range(0, num):
+                    for j in range(0, num):
+                        num_therm[i][j] = m.sqrt(
+                            (temp * (mw_a[i] + mw_a[j])) / (w * mw_a[i] * mw_a[j])
+                        )
+                        therm_ij[i][j] = 1989.1 * (
+                            (num_therm[i][j]) / ((sigma_aa[i][j]) ** w * omega_22[i][j])
+                        )
+                        therm_ij[i][j] = therm_ij[i][j] * 10 ** (-7) * 418.4
+
+                sub_phi_ij_coef = [[0 for x in range(num)] for y in range(num)]
+                sub_phi_ji_coef = [[0 for x in range(num)] for y in range(num)]
+                test = [[0 for x in range(num)] for y in range(num)]
+                phi_coef = [[0 for x in range(num)] for y in range(num)]
+                num_phi = [[0 for x in range(num)] for y in range(num)]
+                denom_phi = [[0 for x in range(num)] for y in range(num)]
+
+                mu_a = mu_a * (10 ** 4)
+
+                for i in range(0, num):
+                    for j in range(0, num):
+                        sub_phi_ij_coef[i][j] = ((mu_a[i]) / visc_ij[i][j]) * (
+                            (2 * mw_a[j]) / (mw_a[i] + mw_a[j])
+                        )
+                # tranpose sub_phi_ij_coef here
+
+                for i in range(0, num):
+                    for j in range(0, num):
+                        test[i][j] = (
+                            m.sqrt(sub_phi_ij_coef[i][j])
+                            + m.sqrt(sub_phi_ji_coef[i][j])
+                        ) * 1 + m.sqrt(
+                            sub_phi_ij_coef(i, j) * sub_phii_ji_coef[i][j]
+                        ) ** (
+                            -1
+                        )
+
+                f_coef_ij = [[0 for x in range(num)] for y in range(num)]
+                bracket_ij = [[0 for x in range(num)] for y in range(num)]
+                sub_psi_coef_ij = [[0 for x in range(num)] for y in range(num)]
+
+                for i in range(0, num):
+                    for j in range(0, num):
+                        sub_psi_coef_ij[i, j] = sub_phi_ij_coef[i, j] * f_coef_ij[i, j]
+
+                sub_psi_coef_ji = [[0 for x in range(num)] for y in range(num)]
+                # insert tranpose of ^
+
+                test2 = [[0 for x in range(num)] for y in range(num)]
+                for i in range(0, num):
+                    for j in range(0, num):
+                        test2[i, j] = (
+                            m.sqrt(sub_psi_coef_ij[i, j])
+                            + m.sqrt(sub_psi_coef_ji[i, j])
+                        ) * (
+                            1 + m.sqrt(sub_psi_coef_ij[i, j] * sub_psi_coef_ji[i, j])
+                        ) ** (
+                            -1
+                        )
+
+                psi_coef = [[0 for x in range(num)] for y in range(num)]
+                num_psi = [[0 for x in range(num)] for y in range(num)]
+                denom_psi = [[0 for x in range(num) for y in range(num)]]
+
+                for i in range(0, num):
+                    for j in range(0, num):
+                        num_psi[i, j] = (
+                            m.sqrt(sub_psi_coef_ij[i, j]) / f_coef_ij[i, j]
+                        ) - (m.sqrt(sub_psi_coef_ji[i, j]) / f_coef_ji[i, j])
+                        denom_psi[i, j] = (
+                            ((mw_a[i] + mw_a[j]) ** 2) / (2.6 * mw_a[i] * mw_a[j])
+                        ) + (m.sqrt(sub_psi_coef_ji[i, j] / f_coef_ji[i, j]))
+                        psi_coef[i, j] = sub_psi_coef_ij[i, j] + (
+                            num_psi[i, j] / denom_psi[i, j]
+                        ) * m.sqrt(sub_psi_coef_ij[i, j])
+
+                denom_sum_comp = [[0 for x in range(num)] for y in range(num)]
+
+                for i in range(0, num):
+                    for j in range(0, num):
+                        if j == i:
+                            denom_sum_comp[i, j] = 0
+                        else:
+                            denom_sum_comp[i, j] = psi_coef[i, j] * mf_a[j]
+
+                # denom_sum = sum(transpose(denom_sum_comp))
+
+                therm_mix = [[0 for x in range(num)] for y in range(num)]
+                for w in range(0, len(therm_mix)):
+                    therm_mix[w] = (mf_a[w] * therm_a[w]) / (mf_a[w] + denom_sum[w])
+
+                gas_therm = sum(therm_mix)
+
+                polar_gas_logic = 0
+                dm_logic = (dm_a) / (3.335640 * 10 ** -30)
+
+                for w in range(0, num):
+                    if dm_logic[w] > 0.1:
+                        polar_gas_logic = polar_gas_logic + 1
+                    elif dm_logic[w] <= 0.1:
+                        polar_gas_logic = polar_gas_logic
+
+                if polar_gas_logic != 0:
+                    gas_therm_a[aaa] = gas_therm * 10
+                elif polar_gas_logic == 0:
+                    gas_therm_a[aaa] = gas_therm
+
+            with open("heatTransfer_results.csv", "w", newline="") as incsv:
                 wr = csv.writer(incsv)
                 for i in range(0, 3500):
                     wr.writerow([i + 1] + [self.visc_gas_mix_a[i]])
+                    wr.writerow([i + 1] + [gas_therm_a[i]])
             self.validationHandling.configure(text="Success", fg="green")
             self.pltFlag = True
             self.calculateButton.config(state="disabled")
-            
-            sigma_aa = [[0 for x  in range(num)] for y in range(num)]
-            ek_aa = [[0 for x in range(num)] for y in range(num)]
-            t_star =  [[0 for x in range(num)] for y in range(num)]
-            omega_22 = [[0 for x in range(num)] for y in range(num)]
-            omega_12 = [[0 for x in range(num)] for y in range(num)]
-            oemga_13 = [[0 for x in range(num)] for y in range(num)]
-            oemga_11 = [[0 for x in range(num)] for y in range(num)]
-            a_parameter [[0 for x in range(num)] for y in range(num)]
-            b_parameter = [[ 0 for x in range(num) for y in range(num)]
-            visc_ij = [[0 for x in range(num) for y in range(num)]
-            therm_ij = [[0 for x in range(num) for y in range(num)]
-            num_therm = [[0 for x in range(num) for y in range(num)]
 
-
-            for i in range(0,num):
-                for j in range(0, num):
-                    sigma_aa[i][j] = 0.5*(sigma_a[i] + Sigma_a[j])
-            
-            for i in range(0, num):
-                for j in range(0, num):
-                    ek_aa[i][j] = m.sqrt(ek_a[i] * ek_a[j])
-
-            t_star = temp*(1./ek_aa)
-
-            for w in range(0, num*num):
-                x = t_star[w]
-                omega_22[w] = (1.586)+(-0.7882)*m.log(x) + (0.2938)*log(x)**2+(0.008756)*m.log(x)**3+(-0.06198)*m.log(x)**4+(0.01936)*m.log(x)**5+(-0.003264)*m.log(x)**6+(0.0002639)*m.log(x)**7+(-8.135*10**-6)*m.log(x)**8
-
-            for w in range(0, num*num):
-                x = t_star[w]
-                omega_12[w] =
-
-            for w in range(0, num*num):
-                x = t_star[w] 
-                omega_13[w] = 
-
-            for w in range(0, num*num):
-                x = t_star[w[] 
-                omega_11[w] = 
-
-            for i in range(0, num):
-                for j in range(0, num):
-                    a_parameters[i][j] = omega_22[i][j]/omega_11[i][j]
-
-            for i in range(0, num):
-                for j in range(0, num):
-                    b_parameters[i][j] = (5*omega_12[i][j])/(omega_11[i][j])
-            
-            for i in range(0, num):
-                for j in range(0, num):
-                    visc_ij[i][j] = (266.93(m.sqrt((2*mw_a[i]*mw_a[j]*temp)/(mw_a[i]+mw_a[j]))/((sigma_aa[i][j])**w*omega_22[i][j])))
-                    visc_ij[i][j] = visc_ij[i][j]*10**(-7)*0.1
-
-            for i in range(0, num):
-                for j in range(0, num):
-                    num_therm[i][j] = m.sqrt((temp*(mw_a[i]+mw_a[j]))/(w*mw_a[i]*mw_a[j]))
-                    therm_ij[i][j] = (1989.1*((num_therm[i][j])/((sigma_aa[i][j])**w*omega_22[i][j])))
-                    therm_ij[i][j] = therm_ij[i][j]*10**(-7)*418.4
-            
-            sub_phi_ij_coef = [[0 for x in range(num)] for y in range(num)]
-            sub_phi_ji_coef = [[0 for x in range(num)] for y in range(num)]
-            test = [[0 for x in range(num)] for y in range(num)]
-            phi_coef = [[0 for x in range(num) for y in range(num)]
-            num_phi = [[0 for x in range(num) for y in range(num)]
-            denom_phi = [[0 for x in range(num)] for y in range(num)]
-            
-
-            mu_a = mu_a*(10**4)
-
-            for i in range(0, num):
-                for j in range(0, num):
-                    sub_phi_ij_coef[i][j] = ((mu_a[i])/visc_ij[i][j])*((2*mw_a[j])/(mw_a[i]+mw_a[j]))
-            #insert tranpose
-            for i in range(0, num):
-                for j in range(0, num):
-                    test[i][j] = (m.sqrt(sub_phi_ij_coef[i][j])+m.sqrt(sub_phi_ji_coef[i][j]))*1+m.sqrt(sub_phi_ij_coef(i,j)*sub_phii_ji_coef[i][j]))**(-1)
-            
-
-
-
-
-                
-
-
-            
-       except:
+        except:
             self.validationHandling.configure(text="Error", fg="red")
 
     def plot(self, visc_gas_mix_a):
