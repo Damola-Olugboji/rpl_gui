@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog
 from widgets.entry_nounit import entry_nounit as enu
+from widgets.transpose import transpose
 import math as m, csv
 import pandas as pd
 import numpy as np
@@ -323,7 +324,7 @@ class viscosityCalculator(tk.Frame):
             self,
             text="Plot",
             font=("Franklin Gothic Medium", 12),
-            command=lambda: self.plot(self.visc_gas_mix_a),
+            command=lambda: self.plot(self.visc_gas_mix_a, self.gas_therm_a),
         )
         plotButton.grid(column=0, row=10, sticky="nesw", pady=(25, 0))
         clearButton = tk.Button(
@@ -392,313 +393,386 @@ class viscosityCalculator(tk.Frame):
 
     def viscositycalculation(self, strippedOutputList, chemicals):
 
-        try:
-            temp = 1
-            gasMixtureArray = [0] * 3500
-            num = len(strippedOutputList)
+        temp = 1
+        gasMixtureArray = [0] * 3500
+        num = len(strippedOutputList)
 
-            self.visc_gas_mix_a = [0] * 3500
-            gas_therm_a = [0] * 3500
-            for aaa in range(0, 3500):
-                mu_a = [0] * num
-                mw_a = [0] * num
-                mf_a = [0] * num
-                bp_a = [0] * num
-                db_a = [0] * num
-                dm_a = [0] * num
-                mv_a = [0] * num
-                therm_a = [0] * num
-                sigma_a = [0] * num
-                ek_a = [0] * num
+        self.visc_gas_mix_a = [0] * 3500
+        self.gas_therm_a = [0] * 3500
+        counter = 0
+        for aaa in range(0, 3500):
+            mu_a = [0] * num
+            mw_a = [0] * num
+            mf_a = [0] * num
+            bp_a = [0] * num
+            db_a = [0] * num
+            dm_a = [0] * num
+            mv_a = [0] * num
+            therm_a = [0] * num
+            sigma_a = [0] * num
+            ek_a = [0] * num
 
-                for a in range(0, num):
-                    if strippedOutputList[a][0] == "Nitrogen (N2)":
-                        mu_a[a] = (
-                            42.606
-                            + (4.75 * (10 ** -1)) * temp
-                            + ((-9.88 * (10 ** -5)) * (temp ** 2))
-                        ) * (10 ** -2)
-                    elif strippedOutputList[a][0] == "Hydrogen(H2)":
-                        mu_a[a] = (
-                            27.758
-                            + (2.12 * (10 ** -1)) * temp
-                            + ((-3.28 * (10 ** -5)) * (temp ** 2))
-                        ) * (10 ** -2)
-                    elif strippedOutputList[a][0] == "Carbon Monoxide (CO)":
-                        mu_a[a] = (
-                            23.811
-                            + (5.3944 * (10 ** -1)) * temp
-                            + ((-1.5411 * (10 ** -4)) * (temp ** 2))
-                        ) * (10 ** -2)
-                    elif strippedOutputList[a][0] == "Carbon Dioxide (C02)":
-                        mu_a[a] = (
-                            11.811
-                            + (4.983 * (10 ** -1)) * temp
-                            + ((-1.0851 * (10 ** -4)) * (temp ** 2))
-                        ) * (10 ** -2)
-                    elif strippedOutputList[a][0] == "Hydrochloride (HCL)":
-                        mu_a[a] = (
-                            -9.118
-                            + (5.55 * (10 ** -1)) * temp
-                            + ((-1.11 * (10 ** -4)) * (temp ** 2))
-                        ) * (10 ** -2)
-                    elif strippedOutputList[a][0] == "Oxygen(02)":
-                        mu_a[a] = (
-                            44.224
-                            + (5.6200 * (10 ** -1)) * temp
-                            + ((-1.1300 * (10 ** -4)) * (temp ** 2))
-                        ) * (10 ** -2)
-
-                for a in range(0, num):
-                    mw_a[a] = float(strippedOutputList[a][1])  # molecular weight array
-                    mf_a[a] = float(strippedOutputList[a][2])  # molar fraction array
-                    bp_a[a] = float(strippedOutputList[a][3])  # boiling point array
-                    db_a[a] = float(
-                        strippedOutputList[a][4]
-                    )  # density at boiling point array
-                    dm_a[a] = float(strippedOutputList[a][5])  # dipole moment array
-                    mv_a[a] = mw_a[a] * (1 / db_a[a]) * (1 / 1000)
-                num_coef = num ** 2
-
-                m_coef = [0] * num_coef
-                i = 0
-                j = 0
-
-                for a in range(0, len(m_coef)):
-                    m_coef[a] = (
-                        (4 * mw_a[i] * mw_a[j]) / (mw_a[i] + mw_a[j]) ** 2
-                    ) ** 0.25
-
-                    if j == num - 1:
-                        j = 0
-                        i = i + 1
-                    else:
-                        j = j + 1
-
-                A_coef = [0] * num_coef
-                num_bracket = [0] * num_coef
-                denom_bracket = [0] * num_coef
-                bracket = [0] * num_coef
-
-                i = 0
-                j = 0
-
-                # A-Coefficient Logic
-                for a in range(0, len(A_coef)):
-                    num_bracket[a] = (mw_a[i] / mw_a[j]) - (mw_a[i] / mw_a[j]) ** 0.45
-                    denom_bracket[a] = (
-                        2 * (1 + (mw_a[i] / mw_a[j]))
-                        + ((1 + ((mw_a[i] / mw_a[j]) ** 0.45)) / (1 + m_coef[a]))
-                        * m_coef[a]
+            for a in range(0, num):
+                if strippedOutputList[a][0] == "Nitrogen (N2)":
+                    mu_a[a] = (
+                        42.606
+                        + (4.75 * (10 ** -1)) * temp
+                        + ((-9.88 * (10 ** -5)) * (temp ** 2))
+                    ) * (10 ** -2)
+                    therm_a[a] = (
+                        0.00309
+                        + (7.5930 * 10 ** -5) * temp
+                        + ((-1.1014 * 10 ** -8) * temp ** 2)
                     )
-                    bracket[a] = 1 + ((num_bracket[a]) / (denom_bracket[a]))
+                    sigma_a[a] = 3.798
+                    ek_a[a] = 71.4
 
-                    A_coef[a] = m_coef[a] * ((mw_a[j] / mw_a[i]) ** 0.5) * (bracket[a])
-                    if j == num - 1:
-                        j = 0
-                        i = i + 1
-                    else:
-                        j = j + 1
-
-                # S coefficient Logic
-                delta = [0] * num
-                for a in range(0, len(delta)):
-                    delta[a] = (2 * 10 ** 3) * (((dm_a[a]) ** 2) / (bp_a[a] * mv_a[a]))
-
-                rduc_temp = [0] * num
-                for a in range(0, len(rduc_temp)):
-                    rduc_temp[a] = temp / (1.15 * bp_a[a]) * (1 + 0.85 * delta[a] ** 2)
-
-                S_coef = [0] * num_coef
-                num_scoef = [0] * num_coef
-                denom_scoef = [0] * num_coef
-
-                i = 0
-                j = 0
-
-                for a in range(0, len(S_coef)):
-                    num_scoef[a] = (
-                        1
-                        + ((rduc_temp[i] * rduc_temp[j]) ** 0.5)
-                        + ((delta[i] * delta[j]) / 4)
+                elif strippedOutputList[a][0] == "Hydrogen(H2)":
+                    mu_a[a] = (
+                        27.758
+                        + (2.12 * (10 ** -1)) * temp
+                        + ((-3.28 * (10 ** -5)) * (temp ** 2))
+                    ) * (10 ** -2)
+                    therm_a[a] = (
+                        0.03951
+                        + (4.5918 * 10 ** -4) * temp
+                        + ((-6.4933 * 10 ** -8) * temp ** 2)
                     )
-                    denom_scoef[a] = (
-                        (1 + rduc_temp[i] + ((delta[i] ** 2) / 4)) ** 0.5
-                    ) * ((1 + rduc_temp[j] + ((delta[j] ** 2) / 4)) ** 0.5)
-                    S_coef[a] = (num_scoef[a]) / (denom_scoef[a])
+                    sigma_a[a] = 2.827
+                    ek_a[a] = 59.7
 
-                    if j == num - 1:
-                        j = 0
-                        i = i + 1
-                    else:
-                        j = j + 1
+                elif strippedOutputList[a][0] == "Carbon Monoxide (CO)":
+                    mu_a[a] = (
+                        23.811
+                        + (5.3944 * (10 ** -1)) * temp
+                        + ((-1.5411 * (10 ** -4)) * (temp ** 2))
+                    ) * (10 ** -2)
+                    therm_a[a] = (
+                        0.00158
+                        + (8.2511 * 10 ^ -5) * temp
+                        + ((-1.9081 * 10 ^ -8) * temp ^ 2)
+                    )
+                    sigma_a[a] = 3.690
+                    ek_a[a] = 91.7
 
-                i = 0
-                j = 0
+                elif strippedOutputList[a][0] == "Carbon Dioxide (C02)":
+                    mu_a[a] = (
+                        11.811
+                        + (4.983 * (10 ** -1)) * temp
+                        + ((-1.0851 * (10 ** -4)) * (temp ** 2))
+                    ) * (10 ** -2)
+                    therm_a[a] = (
+                        -0.01200
+                        + (1.0208 * 10 ** -4) * temp
+                        + ((-2.2403 * 10 ** -8) * temp ** 2)
+                    )
+                    sigma_a[a] = 3.941
+                    ek_a[a] = 195.2
 
-                if num == 2:
-                    denom_sum_comp = [0] * num_coef
-                    for a in range(0, len(denom_sum_comp)):
-                        denom_sum_comp[a] = (S_coef[i] * A_coef[i]) * (
-                            mf_a[j] / math.sqrt(mu_a[j])
-                        )
-                        if i == num - 1:
-                            j = 0
-                            i = i + 1
-                        else:
-                            i = i + 1
-                            j = j + 1
-                    denom_sum = [0] * num
-                    denom_sum[0] = denom_sum_comp[1]
-                    denom_sum[1] = denom_sum_comp[2]
+                elif strippedOutputList[a][0] == "Hydrochloride (HCL)":
+                    mu_a[a] = (
+                        -9.118
+                        + (5.55 * (10 ** -1)) * temp
+                        + ((-1.11 * (10 ** -4)) * (temp ** 2))
+                    ) * (10 ** -2)
+                    therm_a[a] = (
+                        0.00119
+                        + (4.4775 * 10 ** -5) * temp
+                        + ((2.0997 * 10 ** -10) * temp ** 2)
+                    )
+                    sigma_a[a] = 3.39
+                    ek_a[a] = 344.7
 
-                elif num == 3:
-                    denom_sum_comp = [0] * num_coef
-                    for a in range(0, len(denom_sum_comp)):
-                        denom_sum_comp[a] = (S_coef[i] * A_coef[i]) * (
-                            mf_a[j] / math.sqrt(mu_a[j])
-                        )
+                elif strippedOutputList[a][0] == "Oxygen(02)":
+                    mu_a[a] = (
+                        44.224
+                        + (5.6200 * (10 ** -1)) * temp
+                        + ((-1.1300 * (10 ** -4)) * (temp ** 2))
+                    ) * (10 ** -2)
+                elif strippedOutputList[a][0] == "Helium (He)":
+                    mu_a[w] = (
+                        7.29 + (0.03884) * temp + ((-1.937 * 10 ** -6) * temp ** 2)
+                    ) * (10 ** -2)
+                    therm_a[a] = (
+                        47.25 + (0.3127) * temp + ((-1.688 * 10 ** -5) * temp ** 2)
+                    ) * (10 ** -3)
+                    sigma_a[a] = 3.608
+                    ek_a[a] = 10.22
 
-                        if i == num - 1 or i == (num - 1) * 2:
-                            j = 0
-                            i = i + 1
-                        else:
-                            i = i + 1
-                            j = j + 1
-                    denom_sum = [0] * num
-                    denom_sum[0] = denom_sum_comp[1] + denom_sum_comp[2]
-                    denom_sum[1] = denom_sum_comp[3] + denom_sum_comp[5]
-                    denom_sum[2] = denom_sum_comp[6] + denom_sum_comp[7]
+                elif strippedOutputList[a][0] == "Neon (Ne)":
+                    mu_a[a] = (
+                        10.22 + (0.06096) * temp + ((-4.265 * 10 ** -6) * temp ** 2)
+                    ) * (10 ** -2)
+                    therm_a[a] = (
+                        15.98 + (0.09441) * temp + ((-6.604 * 10 ** -6) * temp ** 2)
+                    ) * (10 ** -3)
+                    sigma_a[a] = 2.820
+                    ek_a[a] = 32.8
 
-                elif num == 4:
-                    denom_sum_comp = [0] * num_coef
-                    for a in range(0, len(denom_sum_comp)):
-                        denom_sum_comp[a] = (S_coef[i] * A_coef[i]) * (
-                            mf_a[j] / math.sqrt(mu_a[j])
-                        )
+                elif strippedOutputList[a][0] == "Xenon (Xe)":
+                    mu_a[a] = (
+                        7.755 + (0.05746) * temp + ((-4.062 * 10 ** -6) * temp ** 2)
+                    ) * (10 ** -2)
+                    therm_a[a] = (
+                        1.887 + (0.01366) * temp + ((-9.619 * 10 ** -7) * temp ** 2)
+                    ) * (10 ** -3)
+                    sigma_a[a] = 4.082
+                    ek_a[a] = 206.9
 
-                        if i == (num - 1) or i == (num - 1) * 2 or i == (num - 1) * 3:
-                            j = 0
-                            i = i + 1
-                        else:
-                            i = i + 1
-                            j = j + 1
-                    denom_sum = [0] * num
-                    denom_sum[0] = (
-                        denom_sum_comp[1] + denom_sum_comp[2] + denom_sum_comp[3]
-                    )
-                    denom_sum[1] = (
-                        denom_sum_comp[4] + denom_sum_comp[6] + denom_sum_comp[7]
-                    )
-                    denom_sum[2] = (
-                        denom_sum_comp[8] + denom_sum_comp[9] + denom_sum_comp[11]
-                    )
-                    denom_sum[3] = (
-                        denom_sum_comp[12] + denom_sum_comp[13] + denom_sum_comp[14]
-                    )
-                elif num == 5:
-                    denom_sum_comp = [0] * num_coef
-                    for a in range(0, len(denom_sum_comp)):
-                        denom_sum_comp[a] = (S_coef[i] * A_coef[i]) * (
-                            mf_a[j] / math.sqrt(mu_a[j])
-                        )
+            for a in range(0, num):
+                mw_a[a] = float(strippedOutputList[a][1])  # molecular weight array
+                mf_a[a] = float(strippedOutputList[a][2])  # molar fraction array
+                bp_a[a] = float(strippedOutputList[a][3])  # boiling point array
+                db_a[a] = float(
+                    strippedOutputList[a][4]
+                )  # density at boiling point array
+                dm_a[a] = float(strippedOutputList[a][5])  # dipole moment array
+                mv_a[a] = mw_a[a] * (1 / db_a[a]) * (1 / 1000)
+            num_coef = num ** 2
 
-                        if (
-                            i == (num - 1)
-                            or i == (num - 1) * 2
-                            or i == (num - 1) * 3
-                            or i == (num - 1) * 4
-                        ):
-                            j = 0
-                            i = i + 1
-                        else:
-                            i = i + 1
-                            j = j + 1
-                    denom_sum = [0] * num
-                    denom_sum[0] = (
-                        denom_sum_comp[1]
-                        + denom_sum_comp[2]
-                        + denom_sum_comp[3]
-                        + denom_sum_comp[4]
-                    )
-                    denom_sum[1] = (
-                        denom_sum_comp[5]
-                        + denom_sum_comp[7]
-                        + denom_sum_comp[8]
-                        + denom_sum_comp[9]
-                    )
-                    denom_sum[2] = (
-                        denom_sum_comp[10]
-                        + denom_sum_comp[11]
-                        + denom_sum_comp[13]
-                        + denom_sum_comp[14]
-                    )
-                    denom_sum[3] = (
-                        denom_sum_comp[15]
-                        + denom_sum_comp[16]
-                        + denom_sum_comp[17]
-                        + denom_sum_comp[19]
-                    )
-                    denom_sum[4] = (
-                        denom_sum_comp[20]
-                        + denom_sum_comp[21]
-                        + denom_sum_comp[22]
-                        + denom_sum_comp[23]
-                    )
+            m_coef = [0] * num_coef
+            i = 0
+            j = 0
+
+            for a in range(0, len(m_coef)):
+                m_coef[a] = ((4 * mw_a[i] * mw_a[j]) / (mw_a[i] + mw_a[j]) ** 2) ** 0.25
+
+                if j == num - 1:
+                    j = 0
+                    i = i + 1
                 else:
-                    self.validationHandling.configure(text="Error", fg="red")
-                    self.calculateButton.config(state="disabled")
-                    raise ValueError("Error")
-                visc_mix = [0] * num
-                for a in range(0, len(visc_mix)):
-                    visc_mix[a] = (mf_a[a] * math.sqrt(mu_a[a])) / (
-                        (mf_a[a] / math.sqrt(mu_a[a])) + denom_sum[a]
+                    j = j + 1
+
+            A_coef = [0] * num_coef
+            num_bracket = [0] * num_coef
+            denom_bracket = [0] * num_coef
+            bracket = [0] * num_coef
+
+            i = 0
+            j = 0
+
+            # A-Coefficient Logic
+            for a in range(0, len(A_coef)):
+                num_bracket[a] = (mw_a[i] / mw_a[j]) - (mw_a[i] / mw_a[j]) ** 0.45
+                denom_bracket[a] = (
+                    2 * (1 + (mw_a[i] / mw_a[j]))
+                    + ((1 + ((mw_a[i] / mw_a[j]) ** 0.45)) / (1 + m_coef[a]))
+                    * m_coef[a]
+                )
+                bracket[a] = 1 + ((num_bracket[a]) / (denom_bracket[a]))
+
+                A_coef[a] = m_coef[a] * ((mw_a[j] / mw_a[i]) ** 0.5) * (bracket[a])
+                if j == num - 1:
+                    j = 0
+                    i = i + 1
+                else:
+                    j = j + 1
+
+            # S coefficient Logic
+            delta = [0] * num
+            for a in range(0, len(delta)):
+                delta[a] = (2 * 10 ** 3) * (((dm_a[a]) ** 2) / (bp_a[a] * mv_a[a]))
+
+            rduc_temp = [0] * num
+            for a in range(0, len(rduc_temp)):
+                rduc_temp[a] = temp / (1.15 * bp_a[a]) * (1 + 0.85 * delta[a] ** 2)
+
+            S_coef = [0] * num_coef
+            num_scoef = [0] * num_coef
+            denom_scoef = [0] * num_coef
+
+            i = 0
+            j = 0
+
+            for a in range(0, len(S_coef)):
+                num_scoef[a] = (
+                    1
+                    + ((rduc_temp[i] * rduc_temp[j]) ** 0.5)
+                    + ((delta[i] * delta[j]) / 4)
+                )
+                denom_scoef[a] = ((1 + rduc_temp[i] + ((delta[i] ** 2) / 4)) ** 0.5) * (
+                    (1 + rduc_temp[j] + ((delta[j] ** 2) / 4)) ** 0.5
+                )
+                S_coef[a] = (num_scoef[a]) / (denom_scoef[a])
+
+                if j == num - 1:
+                    j = 0
+                    i = i + 1
+                else:
+                    j = j + 1
+
+            i = 0
+            j = 0
+
+            if num == 2:
+                denom_sum_comp = [0] * num_coef
+                for a in range(0, len(denom_sum_comp)):
+                    denom_sum_comp[a] = (S_coef[i] * A_coef[i]) * (
+                        mf_a[j] / m.sqrt(mu_a[j])
+                    )
+                    if i == num - 1:
+                        j = 0
+                        i = i + 1
+                    else:
+                        i = i + 1
+                        j = j + 1
+                denom_sum = [0] * num
+                denom_sum[0] = denom_sum_comp[1]
+                denom_sum[1] = denom_sum_comp[2]
+
+            elif num == 3:
+                denom_sum_comp = [0] * num_coef
+                for a in range(0, len(denom_sum_comp)):
+                    denom_sum_comp[a] = (S_coef[i] * A_coef[i]) * (
+                        mf_a[j] / m.sqrt(mu_a[j])
                     )
 
-                visc_mix_gas = sum(visc_mix)
-                self.visc_gas_mix_a[aaa] = visc_mix_gas
-                temp = temp + 1
+                    if i == num - 1 or i == (num - 1) * 2:
+                        j = 0
+                        i = i + 1
+                    else:
+                        i = i + 1
+                        j = j + 1
+                denom_sum = [0] * num
+                denom_sum[0] = denom_sum_comp[1] + denom_sum_comp[2]
+                denom_sum[1] = denom_sum_comp[3] + denom_sum_comp[5]
+                denom_sum[2] = denom_sum_comp[6] + denom_sum_comp[7]
 
-                sigma_aa = [[0 for x in range(num)] for y in range(num)]
-                ek_aa = [[0 for x in range(num)] for y in range(num)]
-                t_star = [[0 for x in range(num)] for y in range(num)]
-                omega_22 = [[0 for x in range(num)] for y in range(num)]
-                omega_12 = [[0 for x in range(num)] for y in range(num)]
-                oemga_13 = [[0 for x in range(num)] for y in range(num)]
-                oemga_11 = [[0 for x in range(num)] for y in range(num)]
-                a_parameter = [[0 for x in range(num)] for y in range(num)]
-                b_parameter = [[0 for x in range(num)] for y in range(num)]
-                visc_ij = [[0 for x in range(num)] for y in range(num)]
-                therm_ij = [[0 for x in range(num)] for y in range(num)]
-                num_therm = [[0 for x in range(num)] for y in range(num)]
+            elif num == 4:
+                denom_sum_comp = [0] * num_coef
+                for a in range(0, len(denom_sum_comp)):
+                    denom_sum_comp[a] = (S_coef[i] * A_coef[i]) * (
+                        mf_a[j] / m.sqrt(mu_a[j])
+                    )
 
-                for i in range(0, num):
-                    for j in range(0, num):
-                        sigma_aa[i][j] = 0.5 * (sigma_a[i] + Sigma_a[j])
+                    if i == (num - 1) or i == (num - 1) * 2 or i == (num - 1) * 3:
+                        j = 0
+                        i = i + 1
+                    else:
+                        i = i + 1
+                        j = j + 1
+                denom_sum = [0] * num
+                denom_sum[0] = denom_sum_comp[1] + denom_sum_comp[2] + denom_sum_comp[3]
+                denom_sum[1] = denom_sum_comp[4] + denom_sum_comp[6] + denom_sum_comp[7]
+                denom_sum[2] = (
+                    denom_sum_comp[8] + denom_sum_comp[9] + denom_sum_comp[11]
+                )
+                denom_sum[3] = (
+                    denom_sum_comp[12] + denom_sum_comp[13] + denom_sum_comp[14]
+                )
+            elif num == 5:
+                denom_sum_comp = [0] * num_coef
+                for a in range(0, len(denom_sum_comp)):
+                    denom_sum_comp[a] = (S_coef[i] * A_coef[i]) * (
+                        mf_a[j] / m.sqrt(mu_a[j])
+                    )
 
-                for i in range(0, num):
-                    for j in range(0, num):
-                        ek_aa[i][j] = m.sqrt(ek_a[i] * ek_a[j])
+                    if (
+                        i == (num - 1)
+                        or i == (num - 1) * 2
+                        or i == (num - 1) * 3
+                        or i == (num - 1) * 4
+                    ):
+                        j = 0
+                        i = i + 1
+                    else:
+                        i = i + 1
+                        j = j + 1
+                denom_sum = [0] * num
+                denom_sum[0] = (
+                    denom_sum_comp[1]
+                    + denom_sum_comp[2]
+                    + denom_sum_comp[3]
+                    + denom_sum_comp[4]
+                )
+                denom_sum[1] = (
+                    denom_sum_comp[5]
+                    + denom_sum_comp[7]
+                    + denom_sum_comp[8]
+                    + denom_sum_comp[9]
+                )
+                denom_sum[2] = (
+                    denom_sum_comp[10]
+                    + denom_sum_comp[11]
+                    + denom_sum_comp[13]
+                    + denom_sum_comp[14]
+                )
+                denom_sum[3] = (
+                    denom_sum_comp[15]
+                    + denom_sum_comp[16]
+                    + denom_sum_comp[17]
+                    + denom_sum_comp[19]
+                )
+                denom_sum[4] = (
+                    denom_sum_comp[20]
+                    + denom_sum_comp[21]
+                    + denom_sum_comp[22]
+                    + denom_sum_comp[23]
+                )
+            else:
+                self.validationHandling.configure(text="Error", fg="red")
+                self.calculateButton.config(state="disabled")
+                raise ValueError("Error")
+            visc_mix = [0] * num
+            for a in range(0, len(visc_mix)):
+                visc_mix[a] = (mf_a[a] * m.sqrt(mu_a[a])) / (
+                    (mf_a[a] / m.sqrt(mu_a[a])) + denom_sum[a]
+                )
 
-                t_star = temp * (1.0 / ek_aa)
+            visc_mix_gas = sum(visc_mix)
+            self.visc_gas_mix_a[aaa] = visc_mix_gas
+            temp = temp + 1
 
-                for w in range(0, num * num):
-                    x = t_star[w]
-                    omega_22[w] = (
+            sigma_aa = [[0 for x in range(num)] for y in range(num)]
+            ek_aa = [[0 for x in range(num)] for y in range(num)]
+            t_star = [[0 for x in range(num)] for y in range(num)]
+            omega_22 = [[0 for x in range(num)] for y in range(num)]
+            omega_12 = [[0 for x in range(num)] for y in range(num)]
+            omega_13 = [[0 for x in range(num)] for y in range(num)]
+            omega_11 = [[0 for x in range(num)] for y in range(num)]
+            a_parameter = [[0 for x in range(num)] for y in range(num)]
+            b_parameter = [[0 for x in range(num)] for y in range(num)]
+            visc_ij = [[0 for x in range(num)] for y in range(num)]
+            therm_ij = [[0 for x in range(num)] for y in range(num)]
+            num_therm = [[0 for x in range(num)] for y in range(num)]
+
+            for i in range(0, num):
+                for j in range(0, num):
+                    sigma_aa[i][j] = 0.5 * (sigma_a[i] + sigma_a[j])
+
+            for i in range(0, num):
+                for j in range(0, num):
+                    ek_aa[i][j] = m.sqrt(ek_a[i] * ek_a[j])
+
+            for i in range(0, len(ek_aa)):
+                for j in range(0, len(ek_aa[i])):
+                    if ek_aa[i][j] == 0:
+                        continue
+                    ek_aa[i][j] = (1 / ek_aa[i][j]) * temp
+
+            t_star = ek_aa
+            counter += 1
+
+            for w in range(0, num):
+                for z in range(0, num):
+
+                    x = t_star[z][w]
+                    omega_22[z][w] = (
                         (1.586)
                         + (-0.7882) * m.log(x)
-                        + (0.2938) * log(x) ** 2
-                        + (0.008756) * m.log(x) ** 3
-                        + (-0.06198) * m.log(x) ** 4
-                        + (0.01936) * m.log(x) ** 5
-                        + (-0.003264) * m.log(x) ** 6
-                        + (0.0002639) * m.log(x) ** 7
-                        + (-8.135 * 10 ** -6) * m.log(x) ** 8
+                        + (0.2938) * (m.log(x) ** 2)
+                        + (0.008756) * (m.log(x) ** 3)
+                        + (-0.06198) * (m.log(x) ** 4)
+                        + (0.01936) * (m.log(x) ** 5)
+                        + (-0.003264) * (m.log(x) ** 6)
+                        + (0.0002639) * (m.log(x) ** 7)
+                        + (-8.135 * (10 ** -6)) * (m.log(x) ** 8)
                     )
 
-                for w in range(0, num * num):
-                    x = t_star[w]
-                    omega_12[w] = (
+            for w in range(0, num):
+                for z in range(0, num):
+                    x = t_star[z][w]
+                    omega_12[z][w] = (
                         1.204
                         + (-0.5152) * m.log(x)
                         + (0.2609) * m.log(x) ** 2
@@ -710,9 +784,10 @@ class viscosityCalculator(tk.Frame):
                         + (-1.671 * 10 ** -5) * m.log(x) ** 8
                     )
 
-                for w in range(0, num * num):
-                    x = t_star[w]
-                    omega_13[w] = (
+            for w in range(0, num):
+                for z in range(0, num):
+                    x = t_star[z][w]
+                    omega_13[z][w] = (
                         1.076
                         + (-0.3846) * m.log(x)
                         + (0.2081) * m.log(x) ** 2
@@ -724,9 +799,10 @@ class viscosityCalculator(tk.Frame):
                         + (-1.199 * 10 ** -5) * m.log(x) ** 8
                     )
 
-                for w in range(0, num * num):
-                    x = t_star[w]
-                    omega_11[w] = (
+            for w in range(0, num):
+                for z in range(0, num):
+                    x = t_star[z][w]
+                    omega_11[z][w] = (
                         1.44
                         + (-0.7037) * m.log(x)
                         + (0.286) * m.log(x) ** 2
@@ -735,166 +811,180 @@ class viscosityCalculator(tk.Frame):
                         + (0.0127) * m.log(x) ** 5
                         + (-0.002519) * m.log(x) ** 6
                         + (0.0002424) * m.log(x) ** 7
-                        + (-9.291 * 10 ^ -6) * m.log(x) ** 8
+                        + (-9.291 * 10 ** -6) * m.log(x) ** 8
                     )
 
-                for i in range(0, num):
-                    for j in range(0, num):
-                        a_parameters[i][j] = omega_22[i][j] / omega_11[i][j]
+            for i in range(0, num):
+                for j in range(0, num):
+                    a_parameter[i][j] = omega_22[i][j] / omega_11[i][j]
 
-                for i in range(0, num):
-                    for j in range(0, num):
-                        b_parameters[i][j] = (5 * omega_12[i][j]) / (omega_11[i][j])
+            for i in range(0, num):
+                for j in range(0, num):
+                    b_parameter[i][j] = (5 * omega_12[i][j]) / (omega_11[i][j])
 
-                for i in range(0, num):
-                    for j in range(0, num):
-                        visc_ij[i][j] = 266.93(
-                            m.sqrt((2 * mw_a[i] * mw_a[j] * temp) / (mw_a[i] + mw_a[j]))
-                            / ((sigma_aa[i][j]) ** w * omega_22[i][j])
-                        )
-                        visc_ij[i][j] = visc_ij[i][j] * 10 ** (-7) * 0.1
+            for i in range(0, num):
+                for j in range(0, num):
+                    visc_ij[i][j] = 266.93 * (
+                        m.sqrt((2 * mw_a[i] * mw_a[j] * temp) / (mw_a[i] + mw_a[j]))
+                        / ((sigma_aa[i][j]) ** 2 * omega_22[i][j])
+                    )
+                    visc_ij[i][j] = (visc_ij[i][j] * 10 ** (-7)) * 0.1
 
-                for i in range(0, num):
-                    for j in range(0, num):
-                        num_therm[i][j] = m.sqrt(
-                            (temp * (mw_a[i] + mw_a[j])) / (w * mw_a[i] * mw_a[j])
-                        )
-                        therm_ij[i][j] = 1989.1 * (
-                            (num_therm[i][j]) / ((sigma_aa[i][j]) ** w * omega_22[i][j])
-                        )
-                        therm_ij[i][j] = therm_ij[i][j] * 10 ** (-7) * 418.4
+            for i in range(0, num):
+                for j in range(0, num):
+                    num_therm[i][j] = m.sqrt(
+                        (temp * (mw_a[i] + mw_a[j])) / (w * mw_a[i] * mw_a[j])
+                    )
+                    therm_ij[i][j] = 1989.1 * (
+                        (num_therm[i][j]) / ((sigma_aa[i][j]) ** w * omega_22[i][j])
+                    )
+                    therm_ij[i][j] = therm_ij[i][j] * 10 ** (-7) * 418.4
 
-                sub_phi_ij_coef = [[0 for x in range(num)] for y in range(num)]
-                sub_phi_ji_coef = [[0 for x in range(num)] for y in range(num)]
-                test = [[0 for x in range(num)] for y in range(num)]
-                phi_coef = [[0 for x in range(num)] for y in range(num)]
-                num_phi = [[0 for x in range(num)] for y in range(num)]
-                denom_phi = [[0 for x in range(num)] for y in range(num)]
+            sub_phi_ij_coef = [[0 for x in range(num)] for y in range(num)]
+            sub_phi_ji_coef = transpose(sub_phi_ij_coef)
+            test = [[0 for x in range(num)] for y in range(num)]
+            phi_coef = [[0 for x in range(num)] for y in range(num)]
+            num_phi = [[0 for x in range(num)] for y in range(num)]
+            denom_phi = [[0 for x in range(num)] for y in range(num)]
 
-                mu_a = mu_a * (10 ** 4)
+            mu_a = mu_a * (10 ** 4)
 
-                for i in range(0, num):
-                    for j in range(0, num):
-                        sub_phi_ij_coef[i][j] = ((mu_a[i]) / visc_ij[i][j]) * (
-                            (2 * mw_a[j]) / (mw_a[i] + mw_a[j])
-                        )
-                # tranpose sub_phi_ij_coef here
+            for i in range(0, num):
+                for j in range(0, num):
+                    sub_phi_ij_coef[i][j] = ((mu_a[i]) / visc_ij[i][j]) * (
+                        (2 * mw_a[j]) / (mw_a[i] + mw_a[j])
+                    )
+            # tranpose sub_phi_ij_coef here
 
-                for i in range(0, num):
-                    for j in range(0, num):
-                        test[i][j] = (
-                            m.sqrt(sub_phi_ij_coef[i][j])
-                            + m.sqrt(sub_phi_ji_coef[i][j])
-                        ) * 1 + m.sqrt(
-                            sub_phi_ij_coef(i, j) * sub_phii_ji_coef[i][j]
-                        ) ** (
-                            -1
-                        )
+            """for i in range(0, num):
+                for j in range(0, num):
+                    test[i][j] = (
+                        m.sqrt(sub_phi_ij_coef[i][j]) + m.sqrt(sub_phi_ji_coef[i][j])
+                    ) * 1 + m.sqrt(sub_phi_ij_coef(i, j) * sub_phii_ji_coef[i][j]) ** (
+                        -1
+                    )
+"""
+            f_coef_ij = [[0 for x in range(num)] for y in range(num)]
+            bracket_ij = [[0 for x in range(num)] for y in range(num)]
 
-                f_coef_ij = [[0 for x in range(num)] for y in range(num)]
-                bracket_ij = [[0 for x in range(num)] for y in range(num)]
-                sub_psi_coef_ij = [[0 for x in range(num)] for y in range(num)]
+            sub_psi_coef_ij = [[0 for x in range(num)] for y in range(num)]
 
-                for i in range(0, num):
-                    for j in range(0, num):
-                        sub_psi_coef_ij[i, j] = sub_phi_ij_coef[i, j] * f_coef_ij[i, j]
+            for i in range(0, num):
+                for j in range(0, num):
+                    sub_psi_coef_ij[i][j] = sub_phi_ij_coef[i][j] * f_coef_ij[i][j]
 
-                sub_psi_coef_ji = [[0 for x in range(num)] for y in range(num)]
-                # insert tranpose of ^
+            for i in range(0, num):
+                for j in range(0, num):
+                    bracket_ij[i][j] = ((15 / (4 * a_parameter[i][j])) - 1) * (
+                        mw_a[i] - mw_a[j]
+                    ) + (
+                        ((3 * b_parameter[i][j]) / (2 * a_parameter[i][j]))
+                        + (5 / (8 * a_parameter[i][j]))
+                    ) * mw_a[
+                        j
+                    ]
+                    f_coef_ij[i][j] = 1 + (
+                        (mw_a[i] - mw_a[j]) / (mw_a[i] + mw_a[j]) ** 2
+                    ) * (bracket_ij[i][j])
 
-                test2 = [[0 for x in range(num)] for y in range(num)]
-                for i in range(0, num):
-                    for j in range(0, num):
-                        test2[i, j] = (
-                            m.sqrt(sub_psi_coef_ij[i, j])
-                            + m.sqrt(sub_psi_coef_ji[i, j])
-                        ) * (
-                            1 + m.sqrt(sub_psi_coef_ij[i, j] * sub_psi_coef_ji[i, j])
-                        ) ** (
-                            -1
-                        )
+            sub_psi_coef_ji = [[0 for x in range(num)] for y in range(num)]
+            f_coef_ji = transpose(f_coef_ij)
 
-                psi_coef = [[0 for x in range(num)] for y in range(num)]
-                num_psi = [[0 for x in range(num)] for y in range(num)]
-                denom_psi = [[0 for x in range(num) for y in range(num)]]
+            test2 = [[0 for x in range(num)] for y in range(num)]
+            for i in range(0, num):
+                for j in range(0, num):
+                    test2[i][j] = (
+                        m.sqrt(sub_psi_coef_ij[i][j]) + m.sqrt(sub_psi_coef_ji[i][j])
+                    ) * (1 + m.sqrt(sub_psi_coef_ij[i][j] * sub_psi_coef_ji[i][j])) ** (
+                        -1
+                    )
 
-                for i in range(0, num):
-                    for j in range(0, num):
-                        num_psi[i, j] = (
-                            m.sqrt(sub_psi_coef_ij[i, j]) / f_coef_ij[i, j]
-                        ) - (m.sqrt(sub_psi_coef_ji[i, j]) / f_coef_ji[i, j])
-                        denom_psi[i, j] = (
-                            ((mw_a[i] + mw_a[j]) ** 2) / (2.6 * mw_a[i] * mw_a[j])
-                        ) + (m.sqrt(sub_psi_coef_ji[i, j] / f_coef_ji[i, j]))
-                        psi_coef[i, j] = sub_psi_coef_ij[i, j] + (
-                            num_psi[i, j] / denom_psi[i, j]
-                        ) * m.sqrt(sub_psi_coef_ij[i, j])
+            psi_coef = [[0 for x in range(num)] for y in range(num)]
+            num_psi = [[0 for x in range(num)] for y in range(num)]
+            denom_psi = [[0 for x in range(num)] for y in range(num)]
 
-                denom_sum_comp = [[0 for x in range(num)] for y in range(num)]
+            for i in range(0, num):
+                for j in range(0, num):
+                    num_psi[i][j] = (
+                        m.sqrt(sub_psi_coef_ij[i][j]) / f_coef_ij[i][j]
+                    ) - (m.sqrt(sub_psi_coef_ji[i][j]) / f_coef_ji[i][j])
+                    denom_psi[i][j] = (
+                        ((mw_a[i] + mw_a[j]) ** 2) / (2.6 * mw_a[i] * mw_a[j])
+                    ) + (m.sqrt(sub_psi_coef_ji[i][j] / f_coef_ji[i][j]))
+                    psi_coef[i][j] = sub_psi_coef_ij[i][j] + (
+                        num_psi[i][j] / denom_psi[i][j]
+                    ) * m.sqrt(sub_psi_coef_ij[i][j])
 
-                for i in range(0, num):
-                    for j in range(0, num):
-                        if j == i:
-                            denom_sum_comp[i, j] = 0
-                        else:
-                            denom_sum_comp[i, j] = psi_coef[i, j] * mf_a[j]
+            denom_sum_comp = [[0 for x in range(num)] for y in range(num)]
 
-                # denom_sum = sum(transpose(denom_sum_comp))
+            for i in range(0, num):
+                for j in range(0, num):
+                    if j == i:
+                        denom_sum_comp[i][j] = 0
+                    else:
+                        denom_sum_comp[i][j] = psi_coef[i][j] * mf_a[j]
 
-                therm_mix = [[0 for x in range(num)] for y in range(num)]
-                for w in range(0, len(therm_mix)):
-                    therm_mix[w] = (mf_a[w] * therm_a[w]) / (mf_a[w] + denom_sum[w])
+            # denom_sum = sum(transpose(denom_sum_comp))
+            denom_sum_comp_transpose = transpose(denom_sum_comp)
+            denom_sum = [0] * num
+            for i in range(0, num):
+                for j in range(0, num):
+                    denom_sum[i] += denom_sum_comp_transpose[i][j]
 
-                gas_therm = sum(therm_mix)
+            therm_mix = [0] * num
+            for w in range(0, len(therm_mix)):
+                therm_mix[w] = (mf_a[w] * therm_a[w]) / (mf_a[w] + denom_sum[w])
 
-                polar_gas_logic = 0
-                dm_logic = (dm_a) / (3.335640 * 10 ** -30)
+            gas_therm = sum(therm_mix)
 
-                for w in range(0, num):
-                    if dm_logic[w] > 0.1:
-                        polar_gas_logic = polar_gas_logic + 1
-                    elif dm_logic[w] <= 0.1:
-                        polar_gas_logic = polar_gas_logic
+            polar_gas_logic = 0
+            dm_logic = []
+            for i in dm_a:
+                dm_logic.append(i / (3.335640 * 10 ** -30))
+            # dm_logic = (dm_a) / (3.335640 * 10 ** -30)
 
-                if polar_gas_logic != 0:
-                    gas_therm_a[aaa] = gas_therm * 10
-                elif polar_gas_logic == 0:
-                    gas_therm_a[aaa] = gas_therm
+            for w in range(0, num):
+                if dm_logic[w] > 0.1:
+                    polar_gas_logic = polar_gas_logic + 1
+                elif dm_logic[w] <= 0.1:
+                    polar_gas_logic = polar_gas_logic
 
-            with open("heatTransfer_results.csv", "w", newline="") as incsv:
-                wr = csv.writer(incsv)
-                for i in range(0, 3500):
-                    wr.writerow([i + 1] + [self.visc_gas_mix_a[i]])
-                    wr.writerow([i + 1] + [gas_therm_a[i]])
-            self.validationHandling.configure(text="Success", fg="green")
-            self.pltFlag = True
-            self.calculateButton.config(state="disabled")
+            if polar_gas_logic != 0:
+                self.gas_therm_a[aaa] = gas_therm * 10
+            elif polar_gas_logic == 0:
+                self.gas_therm_a[aaa] = gas_therm
 
-        except:
-            self.validationHandling.configure(text="Error", fg="red")
+        with open("viscosity_results.csv", "w", newline="") as incsv:
+            wr = csv.writer(incsv)
+            for i in range(0, 3500):
+                wr.writerow([i + 1] + [self.visc_gas_mix_a[i]])
 
-    def plot(self, visc_gas_mix_a):
-        matplotlib.use("TkAgg")
+        with open("conductivity_results.csv", "w", newline="") as incsv:
+            wr = csv.writer(incsv)
+            for i in range(0, 3500):
+                wr.writerow([i + 1] + [self.gas_therm_a[i]])
 
-        top = tk.Toplevel()
-        figure = Figure(figsize=(5, 4), dpi=100)
-        plot = figure.add_subplot(1, 1, 1)
-        # plot.plot(self.visc_gas_mix_a[-1], 3500, color="blue", marker="o", linestyle="")
-        x = [*range(1, 3501, 1)]
-        y = self.visc_gas_mix_a
-        plot.plot(x, y, color="red", linestyle=":")
+        self.validationHandling.configure(text="Success", fg="green")
+        self.pltFlag = True
+        self.calculateButton.config(state="disabled")
 
-        canvas = FigureCanvasTkAgg(figure, top)
-        canvas.get_tk_widget().grid(row=0, column=0)
+    def plot(self, visc_gas_mix_a, gas_therm_a):
+        from widgets.plot import plot_frame
 
-        label = tk.Label(
-            top,
-            text="X Axis: Temperature (Kelvin)  \n Y Axis: Viscosity (Kg/m*s * 10^-5)",
-            anchor="e",
+        plot_frame(
+            "Viscosity Results",
+            3500,
+            3500,
+            visc_gas_mix_a,
+            "X Axis: Temperature (Kelvin)  \n Y Axis: Viscosity (Kg/m*s * 10^-5)",
         )
-        label.grid(row=1, column=0)
-
-        figure = Figure(figsize=(5, 4), dpi=100)
+        plot_frame(
+            "Thermal Conductivity Results",
+            3500,
+            3500,
+            gas_therm_a,
+            "X Axis: Temperature (Kelvin)  \n Y Axis: Thermal Conductivity (Kg/m*s * 10^-5)",
+        )
 
     def importCharacteristics(self):
         from pages.propellant import outsidep
