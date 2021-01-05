@@ -27,3 +27,5 @@ make propellant modular
 make [chemicals] global
 
 new changes
+
+clear with no inputs on engine screen causes AttributeError
