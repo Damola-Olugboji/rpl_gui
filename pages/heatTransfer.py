@@ -416,13 +416,13 @@ class viscosityCalculator(tk.Frame):
                 if strippedOutputList[a][0] == "Nitrogen (N2)":
                     mu_a[a] = (
                         42.606
-                        + (4.75 * (10 ** -1)) * temp
-                        + ((-9.88 * (10 ** -5)) * (temp ** 2))
+                        + (4.75 * 10 ** -1) * temp
+                        + ((-9.88 * 10 ** -5) * temp ** 2)
                     ) * (10 ** -2)
                     therm_a[a] = (
                         0.00309
-                        + (7.5930 * 10 ** -5) * temp
-                        + ((-1.1014 * 10 ** -8) * temp ** 2)
+                        + (7.5930 * (10 ** -5)) * temp
+                        + ((-1.1014 * (10 ** -8)) * temp ** 2)
                     )
                     sigma_a[a] = 3.798
                     ek_a[a] = 71.4
@@ -430,8 +430,8 @@ class viscosityCalculator(tk.Frame):
                 elif strippedOutputList[a][0] == "Hydrogen(H2)":
                     mu_a[a] = (
                         27.758
-                        + (2.12 * (10 ** -1)) * temp
-                        + ((-3.28 * (10 ** -5)) * (temp ** 2))
+                        + (2.12 * 10 ** -1) * temp
+                        + ((-3.28 * 10 ** -5) * temp ** 2)
                     ) * (10 ** -2)
                     therm_a[a] = (
                         0.03951
@@ -449,8 +449,8 @@ class viscosityCalculator(tk.Frame):
                     ) * (10 ** -2)
                     therm_a[a] = (
                         0.00158
-                        + (8.2511 * 10 ^ -5) * temp
-                        + ((-1.9081 * 10 ^ -8) * temp ^ 2)
+                        + (8.2511 * 10 ** -5) * temp
+                        + ((-1.9081 * (10 ** -8)) * temp ** 2)
                     )
                     sigma_a[a] = 3.690
                     ek_a[a] = 91.7
@@ -721,7 +721,6 @@ class viscosityCalculator(tk.Frame):
 
             visc_mix_gas = sum(visc_mix)
             self.visc_gas_mix_a[aaa] = visc_mix_gas
-            temp = temp + 1
 
             sigma_aa = [[0 for x in range(num)] for y in range(num)]
             ek_aa = [[0 for x in range(num)] for y in range(num)]
@@ -751,7 +750,6 @@ class viscosityCalculator(tk.Frame):
                     ek_aa[i][j] = (1 / ek_aa[i][j]) * temp
 
             t_star = ek_aa
-            counter += 1
 
             for w in range(0, num):
                 for z in range(0, num):
@@ -760,13 +758,13 @@ class viscosityCalculator(tk.Frame):
                     omega_22[z][w] = (
                         (1.586)
                         + (-0.7882) * m.log(x)
-                        + (0.2938) * (m.log(x) ** 2)
-                        + (0.008756) * (m.log(x) ** 3)
-                        + (-0.06198) * (m.log(x) ** 4)
-                        + (0.01936) * (m.log(x) ** 5)
-                        + (-0.003264) * (m.log(x) ** 6)
-                        + (0.0002639) * (m.log(x) ** 7)
-                        + (-8.135 * (10 ** -6)) * (m.log(x) ** 8)
+                        + (0.2938) * m.log(x) ** 2
+                        + (0.008756) * m.log(x) ** 3
+                        + (-0.05198) * m.log(x) ** 4
+                        + (0.01936) * m.log(x) ** 5
+                        + (-0.003264) * m.log(x) ** 6
+                        + (0.0002639) * m.log(x) ** 7
+                        + (-8.135 * (10 ** -6)) * m.log(x) ** 8
                     )
 
             for w in range(0, num):
@@ -781,7 +779,7 @@ class viscosityCalculator(tk.Frame):
                         + (0.01155) * m.log(x) ** 5
                         + (-0.003077) * m.log(x) ** 6
                         + (0.000366) * m.log(x) ** 7
-                        + (-1.671 * 10 ** -5) * m.log(x) ** 8
+                        + (-1.671 * (10 ** -5)) * m.log(x) ** 8
                     )
 
             for w in range(0, num):
@@ -796,7 +794,7 @@ class viscosityCalculator(tk.Frame):
                         + (0.005235) * m.log(x) ** 5
                         + (-0.001856) * m.log(x) ** 6
                         + (0.0002466) * m.log(x) ** 7
-                        + (-1.199 * 10 ** -5) * m.log(x) ** 8
+                        + (-1.199 * (10 ** -5)) * m.log(x) ** 8
                     )
 
             for w in range(0, num):
@@ -811,7 +809,7 @@ class viscosityCalculator(tk.Frame):
                         + (0.0127) * m.log(x) ** 5
                         + (-0.002519) * m.log(x) ** 6
                         + (0.0002424) * m.log(x) ** 7
-                        + (-9.291 * 10 ** -6) * m.log(x) ** 8
+                        + (-9.291 * (10 ** -6)) * m.log(x) ** 8
                     )
 
             for i in range(0, num):
@@ -820,7 +818,9 @@ class viscosityCalculator(tk.Frame):
 
             for i in range(0, num):
                 for j in range(0, num):
-                    b_parameter[i][j] = (5 * omega_12[i][j]) / (omega_11[i][j])
+                    b_parameter[i][j] = ((5 * omega_12[i][j]) - 4 * omega_13[i][j]) / (
+                        omega_11[i][j]
+                    )
 
             for i in range(0, num):
                 for j in range(0, num):
@@ -828,7 +828,7 @@ class viscosityCalculator(tk.Frame):
                         m.sqrt((2 * mw_a[i] * mw_a[j] * temp) / (mw_a[i] + mw_a[j]))
                         / ((sigma_aa[i][j]) ** 2 * omega_22[i][j])
                     )
-                    visc_ij[i][j] = (visc_ij[i][j] * 10 ** (-7)) * 0.1
+                    visc_ij[i][j] = visc_ij[i][j] * 10 ** (-7) * 0.1
 
             for i in range(0, num):
                 for j in range(0, num):
@@ -838,40 +838,50 @@ class viscosityCalculator(tk.Frame):
                     therm_ij[i][j] = 1989.1 * (
                         (num_therm[i][j]) / ((sigma_aa[i][j]) ** w * omega_22[i][j])
                     )
-                    therm_ij[i][j] = therm_ij[i][j] * 10 ** (-7) * 418.4
+                    therm_ij[i][j] = therm_ij[i][j] * (10 ** -7) * 418.4
 
             sub_phi_ij_coef = [[0 for x in range(num)] for y in range(num)]
-            sub_phi_ji_coef = transpose(sub_phi_ij_coef)
-            test = [[0 for x in range(num)] for y in range(num)]
-            phi_coef = [[0 for x in range(num)] for y in range(num)]
-            num_phi = [[0 for x in range(num)] for y in range(num)]
-            denom_phi = [[0 for x in range(num)] for y in range(num)]
 
-            mu_a = mu_a * (10 ** 4)
+            for i in range(0, len(mu_a)):
+                mu_a[i] = mu_a[i] * (10 ** -4)
 
             for i in range(0, num):
                 for j in range(0, num):
                     sub_phi_ij_coef[i][j] = ((mu_a[i]) / visc_ij[i][j]) * (
                         (2 * mw_a[j]) / (mw_a[i] + mw_a[j])
                     )
-            # tranpose sub_phi_ij_coef here
+
+            sub_phi_ji_coef = transpose(sub_phi_ij_coef)
+
+            test = [[0 for x in range(num)] for y in range(num)]
 
             """for i in range(0, num):
                 for j in range(0, num):
+                    if sub_phi_ij_coef[i][j] == 0 or sub_phi_ji_coef[i][j] == 0:
+                        continue
                     test[i][j] = (
                         m.sqrt(sub_phi_ij_coef[i][j]) + m.sqrt(sub_phi_ji_coef[i][j])
-                    ) * 1 + m.sqrt(sub_phi_ij_coef(i, j) * sub_phii_ji_coef[i][j]) ** (
+                    ) * (1 + m.sqrt(sub_phi_ij_coef[i][j] * sub_phi_ji_coef[i][j])) ** (
                         -1
-                    )
-"""
+                    )"""
+
+            phi_coef = [[0 for x in range(num)] for y in range(num)]
+            num_phi = [[0 for x in range(num)] for y in range(num)]
+            denom_phi = [[0 for x in range(num)] for y in range(num)]
             f_coef_ij = [[0 for x in range(num)] for y in range(num)]
             bracket_ij = [[0 for x in range(num)] for y in range(num)]
 
-            sub_psi_coef_ij = [[0 for x in range(num)] for y in range(num)]
-
             for i in range(0, num):
                 for j in range(0, num):
-                    sub_psi_coef_ij[i][j] = sub_phi_ij_coef[i][j] * f_coef_ij[i][j]
+                    num_phi[i][j] = mw_a[i] * m.sqrt(sub_phi_ij_coef[i][j]) - mw_a[
+                        j
+                    ] * m.sqrt(sub_phi_ji_coef[i][j])
+                    denom_phi[i][j] = 2 * (mw_a[i] + mw_a[j]) + mw_a[j] * m.sqrt(
+                        sub_phi_ji_coef[i][j]
+                    )
+                    phi_coef[i][j] = sub_phi_ij_coef[i][j] + (
+                        num_phi[i][j] / denom_phi[i][j]
+                    ) * m.sqrt(sub_phi_ij_coef[i][j])
 
             for i in range(0, num):
                 for j in range(0, num):
@@ -887,8 +897,13 @@ class viscosityCalculator(tk.Frame):
                         (mw_a[i] - mw_a[j]) / (mw_a[i] + mw_a[j]) ** 2
                     ) * (bracket_ij[i][j])
 
-            sub_psi_coef_ji = [[0 for x in range(num)] for y in range(num)]
             f_coef_ji = transpose(f_coef_ij)
+
+            sub_psi_coef_ij = [[0 for x in range(num)] for y in range(num)]
+
+            for i in range(0, num):
+                for j in range(0, num):
+                    sub_psi_coef_ij[i][j] = sub_phi_ij_coef[i][j] * f_coef_ij[i][j]
 
             test2 = [[0 for x in range(num)] for y in range(num)]
             for i in range(0, num):
@@ -926,10 +941,9 @@ class viscosityCalculator(tk.Frame):
 
             # denom_sum = sum(transpose(denom_sum_comp))
             denom_sum_comp_transpose = transpose(denom_sum_comp)
-            denom_sum = [0] * num
+            denom_sum = []
             for i in range(0, num):
-                for j in range(0, num):
-                    denom_sum[i] += denom_sum_comp_transpose[i][j]
+                denom_sum.append(sum(denom_sum_comp_transpose[i]))
 
             therm_mix = [0] * num
             for w in range(0, len(therm_mix)):
@@ -940,7 +954,7 @@ class viscosityCalculator(tk.Frame):
             polar_gas_logic = 0
             dm_logic = []
             for i in dm_a:
-                dm_logic.append(i / (3.335640 * 10 ** -30))
+                dm_logic.append(i / (3.335640 * (10 ** -30)))
             # dm_logic = (dm_a) / (3.335640 * 10 ** -30)
 
             for w in range(0, num):
@@ -953,6 +967,8 @@ class viscosityCalculator(tk.Frame):
                 self.gas_therm_a[aaa] = gas_therm * 10
             elif polar_gas_logic == 0:
                 self.gas_therm_a[aaa] = gas_therm
+
+            temp = temp + 1
 
         with open("viscosity_results.csv", "w", newline="") as incsv:
             wr = csv.writer(incsv)
