@@ -393,14 +393,14 @@ class viscosityCalculator(tk.Frame):
 
     def viscositycalculation(self, strippedOutputList, chemicals):
 
-        temp = 1
-        gasMixtureArray = [0] * 3500
+        temp = 50
+        gasMixtureArray = [0] * 3400
         num = len(strippedOutputList)
 
-        self.visc_gas_mix_a = [0] * 3500
-        self.gas_therm_a = [0] * 3500
-        counter = 0
-        for aaa in range(0, 3500):
+        self.visc_gas_mix_a = [0] * 3400
+        self.gas_therm_a = [0] * 3400
+
+        for aaa in range(0, 3400):
             mu_a = [0] * num
             mw_a = [0] * num
             mf_a = [0] * num
@@ -627,7 +627,7 @@ class viscosityCalculator(tk.Frame):
                         mf_a[j] / m.sqrt(mu_a[j])
                     )
 
-                    if i == num - 1 or i == (num - 1) * 2:
+                    if i == num - 1 or i == (num * 2) - 1:
                         j = 0
                         i = i + 1
                     else:
@@ -645,7 +645,7 @@ class viscosityCalculator(tk.Frame):
                         mf_a[j] / m.sqrt(mu_a[j])
                     )
 
-                    if i == (num - 1) or i == (num - 1) * 2 or i == (num - 1) * 3:
+                    if i == (num - 1) or i == (num * 2) - 1 or i == (num * 3) - 1:
                         j = 0
                         i = i + 1
                     else:
@@ -669,9 +669,9 @@ class viscosityCalculator(tk.Frame):
 
                     if (
                         i == (num - 1)
-                        or i == (num - 1) * 2
-                        or i == (num - 1) * 3
-                        or i == (num - 1) * 4
+                        or i == (num * 2) - 1
+                        or i == (num * 3) - 1
+                        or i == (num * 4) - 1
                     ):
                         j = 0
                         i = i + 1
@@ -721,7 +721,6 @@ class viscosityCalculator(tk.Frame):
 
             visc_mix_gas = sum(visc_mix)
             self.visc_gas_mix_a[aaa] = visc_mix_gas
-
             sigma_aa = [[0 for x in range(num)] for y in range(num)]
             ek_aa = [[0 for x in range(num)] for y in range(num)]
             t_star = [[0 for x in range(num)] for y in range(num)]
@@ -735,25 +734,32 @@ class viscosityCalculator(tk.Frame):
             therm_ij = [[0 for x in range(num)] for y in range(num)]
             num_therm = [[0 for x in range(num)] for y in range(num)]
 
+            from widgets.check_negative import check_negative
+
             for i in range(0, num):
                 for j in range(0, num):
                     sigma_aa[i][j] = 0.5 * (sigma_a[i] + sigma_a[j])
+            # print("sigma_aa: " + str(check_negative(sigma_aa)))
 
             for i in range(0, num):
                 for j in range(0, num):
                     ek_aa[i][j] = m.sqrt(ek_a[i] * ek_a[j])
+            # print("ek_aa: " + str(check_negative(ek_aa)))
+            print(temp)
+            for ek in ek_aa:
+                print(ek)
 
-            for i in range(0, len(ek_aa)):
-                for j in range(0, len(ek_aa[i])):
+            for i in range(0, num):
+                for j in range(0, num):
                     if ek_aa[i][j] == 0:
                         continue
-                    ek_aa[i][j] = (1 / ek_aa[i][j]) * temp
+                    t_star[i][j] = (1 / ek_aa[i][j]) * temp
 
-            t_star = ek_aa
+            # print("t_star: " + str(check_negative(t_star)))
+            print(t_star)
 
             for w in range(0, num):
                 for z in range(0, num):
-
                     x = t_star[z][w]
                     omega_22[z][w] = (
                         (1.586)
@@ -766,6 +772,7 @@ class viscosityCalculator(tk.Frame):
                         + (0.0002639) * m.log(x) ** 7
                         + (-8.135 * (10 ** -6)) * m.log(x) ** 8
                     )
+            print("omega_22: " + str(check_negative(omega_22)))
 
             for w in range(0, num):
                 for z in range(0, num):
@@ -781,6 +788,7 @@ class viscosityCalculator(tk.Frame):
                         + (0.000366) * m.log(x) ** 7
                         + (-1.671 * (10 ** -5)) * m.log(x) ** 8
                     )
+            print("omega_12: " + str(check_negative(omega_12)))
 
             for w in range(0, num):
                 for z in range(0, num):
@@ -796,6 +804,7 @@ class viscosityCalculator(tk.Frame):
                         + (0.0002466) * m.log(x) ** 7
                         + (-1.199 * (10 ** -5)) * m.log(x) ** 8
                     )
+            print("omega_13: " + str(check_negative(omega_13)))
 
             for w in range(0, num):
                 for z in range(0, num):
@@ -811,16 +820,19 @@ class viscosityCalculator(tk.Frame):
                         + (0.0002424) * m.log(x) ** 7
                         + (-9.291 * (10 ** -6)) * m.log(x) ** 8
                     )
+            print("omega_11: " + str(check_negative(omega_11)))
 
             for i in range(0, num):
                 for j in range(0, num):
                     a_parameter[i][j] = omega_22[i][j] / omega_11[i][j]
+            print("a_parameter: " + str(check_negative(a_parameter)))
 
             for i in range(0, num):
                 for j in range(0, num):
-                    b_parameter[i][j] = ((5 * omega_12[i][j]) - 4 * omega_13[i][j]) / (
+                    b_parameter[i][j] = (5 * omega_12[i][j] - 4 * omega_13[i][j]) / (
                         omega_11[i][j]
                     )
+            print("b_parameter: " + str(check_negative(b_parameter)))
 
             for i in range(0, num):
                 for j in range(0, num):
@@ -829,6 +841,7 @@ class viscosityCalculator(tk.Frame):
                         / ((sigma_aa[i][j]) ** 2 * omega_22[i][j])
                     )
                     visc_ij[i][j] = visc_ij[i][j] * 10 ** (-7) * 0.1
+            print("visc_ij: " + str(check_negative(visc_ij)))
 
             for i in range(0, num):
                 for j in range(0, num):
@@ -905,6 +918,8 @@ class viscosityCalculator(tk.Frame):
                 for j in range(0, num):
                     sub_psi_coef_ij[i][j] = sub_phi_ij_coef[i][j] * f_coef_ij[i][j]
 
+            sub_psi_coef_ji = transpose(sub_psi_coef_ij)
+
             test2 = [[0 for x in range(num)] for y in range(num)]
             for i in range(0, num):
                 for j in range(0, num):
@@ -941,9 +956,10 @@ class viscosityCalculator(tk.Frame):
 
             # denom_sum = sum(transpose(denom_sum_comp))
             denom_sum_comp_transpose = transpose(denom_sum_comp)
-            denom_sum = []
+            denom_sum = [0] * num
             for i in range(0, num):
-                denom_sum.append(sum(denom_sum_comp_transpose[i]))
+                for j in range(0, num):
+                    denom_sum[i] += denom_sum_comp_transpose[j][i]
 
             therm_mix = [0] * num
             for w in range(0, len(therm_mix)):
@@ -972,12 +988,12 @@ class viscosityCalculator(tk.Frame):
 
         with open("viscosity_results.csv", "w", newline="") as incsv:
             wr = csv.writer(incsv)
-            for i in range(0, 3500):
+            for i in range(0, 3400):
                 wr.writerow([i + 1] + [self.visc_gas_mix_a[i]])
 
         with open("conductivity_results.csv", "w", newline="") as incsv:
             wr = csv.writer(incsv)
-            for i in range(0, 3500):
+            for i in range(0, 3400):
                 wr.writerow([i + 1] + [self.gas_therm_a[i]])
 
         self.validationHandling.configure(text="Success", fg="green")
@@ -989,15 +1005,17 @@ class viscosityCalculator(tk.Frame):
 
         plot_frame(
             "Viscosity Results",
-            3500,
-            3500,
+            6,
+            3400,
+            3400,
             visc_gas_mix_a,
             "X Axis: Temperature (Kelvin)  \n Y Axis: Viscosity (Kg/m*s * 10^-5)",
         )
         plot_frame(
             "Thermal Conductivity Results",
-            3500,
-            3500,
+            6,
+            3400,
+            3400,
             gas_therm_a,
             "X Axis: Temperature (Kelvin)  \n Y Axis: Thermal Conductivity (Kg/m*s * 10^-5)",
         )
